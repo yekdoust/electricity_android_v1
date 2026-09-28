@@ -1,0 +1,7 @@
+1) Android Studio را نصب کنید.
+2) این پوشه را در Android Studio با Open باز کنید.
+3) صبر کنید Gradle Sync تمام شود.
+4) از Build > Build APK(s) استفاده کنید.
+5) فایل خروجی در app\build\outputs\apk\debug\app-debug.apk قرار می‌گیرد.
+
+نکته: این پروژه در زمان اجرای برنامه هیچ کتابخانه خارجی ندارد؛ رابط کاربری داخل WebView و منطق محاسبه داخل assets/index.html است.
