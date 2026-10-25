@@ -66,8 +66,9 @@ h1{font-size:22px;margin:0 0 4px}.muted{color:#667788;font-size:12px}.grid{displ
   .method-table tbody{display:block;width:100%}
   .method-table tbody tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin:0 0 10px;border:1px solid #d5dee8;border-radius:12px;overflow:hidden;background:#fff}
   .method-table tbody td{display:block;min-width:0;overflow-wrap:anywhere;padding:10px;font-size:14px;line-height:1.55;text-align:right;border:0;border-left:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0}
-  .method-table tbody td::before{content:attr(data-label);display:block;font-size:11px;font-weight:700;color:#607083;margin-bottom:5px}
+  .method-table tbody td::before{content:attr(data-label);display:block;font-size:12px;font-weight:700;color:#607083;margin-bottom:5px}
   .method-table tbody td:first-child{grid-column:1/-1;background:#f1f5f9;font-size:15px;font-weight:700}
+  .method-table tbody td:first-child::before{display:none}
   .method-lead{font-size:14px;padding:10px}
   .notice{font-size:13px;line-height:1.6}
   .muted{font-size:13px;line-height:1.55}
@@ -82,7 +83,7 @@ h1{font-size:22px;margin:0 0 4px}.muted{color:#667788;font-size:12px}.grid{displ
   .tier-mobile-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
   .tier-mobile-field{border:1px solid #e2e8f0;border-radius:9px;padding:7px;min-width:0}
   .tier-mobile-label{font-size:11px;line-height:1.35;color:#607083;font-weight:700;margin-bottom:3px}
-  .tier-mobile-value{font-size:14px;line-height:1.45;font-weight:700;overflow-wrap:anywhere}
+  .tier-mobile-value{font-size:15px;line-height:1.45;font-weight:700;overflow-wrap:anywhere}
   .tier-total-mobile{display:grid;gap:7px;margin-top:10px}
   .tier-total-line{display:flex;align-items:center;justify-content:space-between;gap:12px;border-radius:10px;background:#edf6ff;padding:10px;font-size:14px;font-weight:700}
   .tier-total-line strong{font-size:16px;white-space:nowrap}
@@ -1857,7 +1858,7 @@ function render(d){
       const box=document.createElement('div');box.className='tier-mobile-field';
       const lab=document.createElement('div');lab.className='tier-mobile-label';lab.textContent=label;
       const val=document.createElement('div');val.className='tier-mobile-value';val.textContent=value;
-      box.append(lab,val);grid.appendChild(box);
+      box.appendChild(lab);box.appendChild(val);grid.appendChild(box);
     });
     card.appendChild(grid);tiersMobile.appendChild(card);
   };
