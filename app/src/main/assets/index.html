@@ -112,23 +112,25 @@ h1{font-size:22px;margin:0 0 4px}.muted{color:#667788;font-size:12px}.grid{displ
 @media(max-width:650px){.calendar-backdrop{align-items:flex-end;padding:0}.calendar-dialog{width:100%;max-width:none;border-radius:20px 20px 0 0;padding:16px 14px calc(18px + env(safe-area-inset-bottom))}.calendar-day,.calendar-empty{min-height:44px}.calendar-day{font-size:16px}.calendar-month-row strong{font-size:17px}.calendar-weekdays span{font-size:13px}}
 
 
-/* Keep calculation order and numeric strings left-to-right; Persian labels remain RTL. */
+/* Keep the page and table layout RTL; isolate only equations and number strings LTR. */
 #prev,#curr,#days{direction:ltr;text-align:left;font-variant-numeric:tabular-nums}
 .date-control input{direction:ltr;text-align:left;font-variant-numeric:tabular-nums}
-.method-table,.tier-table-wrap .table{direction:ltr}
+.method-table{direction:rtl}
 .method-table th{direction:rtl;text-align:right}
 .method-table td:first-child{direction:rtl;text-align:right}
-.method-table td:not(:first-child){direction:ltr;text-align:left;unicode-bidi:plaintext;font-variant-numeric:tabular-nums}
-.tier-table-wrap .table th,.tier-table-wrap .table td{direction:ltr;text-align:center;font-variant-numeric:tabular-nums}
+.math-ltr{direction:ltr!important;text-align:left!important;unicode-bidi:isolate!important;font-variant-numeric:tabular-nums}
+.tier-table-wrap .table{direction:rtl}
+.tier-table-wrap .table th{direction:rtl;text-align:center}
+.tier-table-wrap .table td.numeric-ltr{direction:ltr!important;text-align:center;unicode-bidi:isolate;font-variant-numeric:tabular-nums}
 .input-snapshot{display:flex;gap:8px 16px;flex-wrap:wrap;align-items:center;padding:10px 12px;border:1px solid #d5e1ed;background:#f8fbff;border-radius:11px;margin-bottom:10px;font-size:13px}
 .input-snapshot .snapshot-value{direction:ltr;unicode-bidi:isolate;display:inline-block;font-weight:700;font-variant-numeric:tabular-nums}
 @media(max-width:650px){
- .method-table tbody td:not(:first-child){direction:ltr;text-align:left}
+ .method-table tbody td.math-ltr{direction:ltr!important;text-align:left!important;unicode-bidi:isolate!important}
  .method-table tbody td::before{direction:rtl;text-align:right}
- .tier-mobile-grid{direction:ltr}
- .tier-mobile-field{direction:ltr;text-align:left}
+ .tier-mobile-grid{direction:rtl}
+ .tier-mobile-field{direction:rtl;text-align:right}
  .tier-mobile-label{direction:rtl;text-align:right}
- .tier-mobile-value{direction:ltr;text-align:left;font-variant-numeric:tabular-nums}
+ .tier-mobile-value{direction:ltr!important;text-align:left!important;unicode-bidi:isolate;font-variant-numeric:tabular-nums}
 }
 
 </style>
@@ -2008,7 +2010,13 @@ function render(d){
     const tr=document.createElement('tr');
     const periodAmount=x.amount*days/30;
     const vals=[mode,fa(x.from),x.to===null?'بیشتر':fa(x.to),fa(x.qty),fa(x.rate),fa(x.amount),fa(periodAmount)];
-    vals.forEach((v,i)=>{const td=document.createElement('td');td.textContent=v;td.setAttribute('data-label',tierHeaders[i]);tr.appendChild(td)});
+    vals.forEach((v,i)=>{
+      const td=document.createElement('td');
+      td.textContent=v;
+      td.setAttribute('data-label',tierHeaders[i]);
+      if(i>0){td.classList.add('numeric-ltr');td.setAttribute('dir','ltr');}
+      tr.appendChild(td);
+    });
     tiers.appendChild(tr);
 
     const card=document.createElement('div');card.className='tier-mobile-card';
@@ -2055,7 +2063,21 @@ function renderMethod(d){
   rows.push(['بهای ماهانه معادل کل دوره','بهای انرژی دوره × ۳۰ ÷ تعداد روز',fa(d.periodEnergy)+' × ۳۰ ÷ '+fa(d.days)+' = '+fa(d.monthEnergy)+' ریال']);
   const tbody=document.getElementById('methodRows');tbody.innerHTML='';
   const methodLabels=['مرحله','فرمول','جایگذاری و نتیجه'];
-  rows.forEach(r=>{const tr=document.createElement('tr');r.forEach((val,i)=>{const td=document.createElement('td');td.textContent=val;td.setAttribute('data-label',methodLabels[i]);tr.appendChild(td)});tbody.appendChild(tr)});
+  rows.forEach(r=>{
+    const tr=document.createElement('tr');
+    r.forEach((val,i)=>{
+      const td=document.createElement('td');
+      td.textContent=val;
+      td.setAttribute('data-label',methodLabels[i]);
+      // Only the mathematical expression itself is LTR; Persian labels/table remain RTL.
+      if(i===1 || (i===2 && /[×÷=+−]/.test(String(val)))){
+        td.classList.add('math-ltr');
+        td.setAttribute('dir','ltr');
+      }
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
   applyResponsiveLabels();
   let note;
   if(d.mode==='سرد/غیرگرم')note='دوره کاملاً سرد/غیرگرم است: '+fa(d.br.cold)+' روز سرد و '+fa(d.br.hot)+' روز گرم. بنابراین فقط جدول «'+d.method+'» استفاده شده و جدول تعرفه گرم برای این دوره اعمال نشده است.';
