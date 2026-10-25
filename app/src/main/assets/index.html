@@ -2048,19 +2048,22 @@ function renderMethod(d){
   const lead='محاسبه برای '+d.prov+'، '+d.city+'، منطقه '+d.zone+'؛ از '+document.getElementById('start').value+' تا '+document.getElementById('end').value+'. وضعیت دوره: '+d.mode+'.';
   set('methodIntro',lead);
   const rows=[];
-  rows.push(['۱. مصرف دوره','قرائت جاری − قرائت قبلی',fa(d.curr)+' − '+fa(d.prev)+' = '+fa(d.kwh)+' کیلووات‌ساعت']);
-  rows.push(['۲. استانداردسازی مصرف','مصرف دوره × ۳۰ ÷ تعداد روز',fa(d.kwh)+' × ۳۰ ÷ '+fa(d.days)+' = '+fa(d.monthly)+' کیلووات‌ساعت در ۳۰ روز']);
+  rows.push(['۱. مصرف دوره','(قرائت جاری − قرائت قبلی)','('+fa(d.curr)+' − '+fa(d.prev)+') = '+fa(d.kwh)+' کیلووات‌ساعت']);
+  rows.push(['۲. استانداردسازی مصرف','(مصرف دوره × ۳۰) ÷ تعداد روز','('+fa(d.kwh)+' × ۳۰) ÷ '+fa(d.days)+' = '+fa(d.monthly)+' کیلووات‌ساعت در ۳۰ روز']);
   rows.push(['۳. شمارش روزهای گرم','بررسی هر روز بازه با قاعده شهر',fa(d.br.hot)+' روز گرم از '+fa(d.days)+' روز ('+fa(d.br.hotPct)+'٪)']);
   rows.push(['۴. شمارش روزهای سرد/غیرگرم','روزهای خارج از بازه گرم',fa(d.br.cold)+' روز سرد/غیرگرم ('+fa(d.br.coldPct)+'٪)']);
-  rows.push(['۵. ضریب روز وزنی','روز گرم × ضریب گرم + روز سرد × ضریب غیرگرم',fa(d.br.hot)+' × '+fa(d.hotCoef)+' + '+fa(d.br.cold)+' × '+fa(d.coldCoef)+' = '+fa(d.weighted)]);
+  rows.push(['۵. ضریب روز وزنی','((روز گرم × ضریب گرم) + (روز سرد × ضریب غیرگرم))','(('+fa(d.br.hot)+' × '+fa(d.hotCoef)+') + ('+fa(d.br.cold)+' × '+fa(d.coldCoef)+')) = '+fa(d.weighted)]);
   if(d.mode==='ترکیبی'){
-    d.split.forEach(part=>rows.push(['۶. مصرف معادل ۳۰روزه بخش '+part.mode,'مصرف آن بخش × ۳۰ ÷ روزهای همان بخش',fa(part.monthly)+' کیلووات‌ساعت؛ '+fa(part.days)+' روز؛ تعرفه: '+part.method]));
-    rows.push(['۷. بهای هر بخش در دوره','بهای پلکانی ۳۰روزه همان بخش × روزهای بخش ÷ ۳۰',d.split.map(part=>part.mode+': '+fa(part.energy)+' ریال').join('؛ ')]);
+    d.split.forEach(part=>{
+      const partKwh=part.mode==='گرم'?d.hotKwh:d.coldKwh;
+      rows.push(['۶. مصرف معادل ۳۰روزه بخش '+part.mode,'(مصرف آن بخش × ۳۰) ÷ روزهای همان بخش','('+fa(partKwh)+' × ۳۰) ÷ '+fa(part.days)+' = '+fa(part.monthly)+' کیلووات‌ساعت در ۳۰ روز؛ تعرفه: '+part.method]);
+    });
+    rows.push(['۷. بهای هر بخش در دوره','(بهای پلکانی ۳۰روزه × روزهای بخش) ÷ ۳۰',d.split.map(part=>part.mode+': ('+fa(part.energy*30/part.days)+' × '+fa(part.days)+') ÷ ۳۰ = '+fa(part.energy)+' ریال').join('؛ ')]);
   }else{
     rows.push(['۶. انتخاب جدول تعرفه','بر اساس منطقه تعرفه و وضعیت گرم یا سرد دوره',d.method]);
-    rows.push(['۷. بهای انرژی دوره','بهای پلکانی ۳۰روزه × تعداد روز ÷ ۳۰',fa(d.monthEnergy)+' × '+fa(d.days)+' ÷ ۳۰ = '+fa(d.periodEnergy)+' ریال']);
+    rows.push(['۷. بهای انرژی دوره','(بهای پلکانی ۳۰روزه × تعداد روز) ÷ ۳۰','('+fa(d.monthEnergy)+' × '+fa(d.days)+') ÷ ۳۰ = '+fa(d.periodEnergy)+' ریال']);
   }
-  rows.push(['بهای ماهانه معادل کل دوره','بهای انرژی دوره × ۳۰ ÷ تعداد روز',fa(d.periodEnergy)+' × ۳۰ ÷ '+fa(d.days)+' = '+fa(d.monthEnergy)+' ریال']);
+  rows.push(['بهای ماهانه معادل کل دوره','(بهای انرژی دوره × ۳۰) ÷ تعداد روز','('+fa(d.periodEnergy)+' × ۳۰) ÷ '+fa(d.days)+' = '+fa(d.monthEnergy)+' ریال']);
   const tbody=document.getElementById('methodRows');tbody.innerHTML='';
   const methodLabels=['مرحله','فرمول','جایگذاری و نتیجه'];
   rows.forEach(r=>{
