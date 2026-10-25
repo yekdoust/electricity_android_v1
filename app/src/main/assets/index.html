@@ -111,6 +111,26 @@ h1{font-size:22px;margin:0 0 4px}.muted{color:#667788;font-size:12px}.grid{displ
 .calendar-caption{font-size:11px;color:#718096;text-align:center;margin-top:10px}
 @media(max-width:650px){.calendar-backdrop{align-items:flex-end;padding:0}.calendar-dialog{width:100%;max-width:none;border-radius:20px 20px 0 0;padding:16px 14px calc(18px + env(safe-area-inset-bottom))}.calendar-day,.calendar-empty{min-height:44px}.calendar-day{font-size:16px}.calendar-month-row strong{font-size:17px}.calendar-weekdays span{font-size:13px}}
 
+
+/* Keep calculation order and numeric strings left-to-right; Persian labels remain RTL. */
+#prev,#curr,#days{direction:ltr;text-align:left;font-variant-numeric:tabular-nums}
+.date-control input{direction:ltr;text-align:left;font-variant-numeric:tabular-nums}
+.method-table,.tier-table-wrap .table{direction:ltr}
+.method-table th{direction:rtl;text-align:right}
+.method-table td:first-child{direction:rtl;text-align:right}
+.method-table td:not(:first-child){direction:ltr;text-align:left;unicode-bidi:plaintext;font-variant-numeric:tabular-nums}
+.tier-table-wrap .table th,.tier-table-wrap .table td{direction:ltr;text-align:center;font-variant-numeric:tabular-nums}
+.input-snapshot{display:flex;gap:8px 16px;flex-wrap:wrap;align-items:center;padding:10px 12px;border:1px solid #d5e1ed;background:#f8fbff;border-radius:11px;margin-bottom:10px;font-size:13px}
+.input-snapshot .snapshot-value{direction:ltr;unicode-bidi:isolate;display:inline-block;font-weight:700;font-variant-numeric:tabular-nums}
+@media(max-width:650px){
+ .method-table tbody td:not(:first-child){direction:ltr;text-align:left}
+ .method-table tbody td::before{direction:rtl;text-align:right}
+ .tier-mobile-grid{direction:ltr}
+ .tier-mobile-field{direction:ltr;text-align:left}
+ .tier-mobile-label{direction:rtl;text-align:right}
+ .tier-mobile-value{direction:ltr;text-align:left;font-variant-numeric:tabular-nums}
+}
+
 </style>
 </head>
 <body>
@@ -132,8 +152,8 @@ h1{font-size:22px;margin:0 0 4px}.muted{color:#667788;font-size:12px}.grid{displ
   <section id="inputPanel" class="tab-panel active">
     <div class="card">
       <div class="grid">
-        <div class="field"><label>قرائت قبلی</label><input id="prev" value="84069" inputmode="numeric"></div>
-        <div class="field"><label>قرائت جاری</label><input id="curr" value="92034" inputmode="numeric"></div>
+        <div class="field"><label>قرائت قبلی</label><input id="prev" value="" placeholder="قرائت قبلی" inputmode="numeric" autocomplete="off"></div>
+        <div class="field"><label>قرائت جاری</label><input id="curr" value="" placeholder="قرائت جاری" inputmode="numeric" autocomplete="off"></div>
         <div class="field"><label for="start">تاریخ شروع دوره (شمسی)</label><div class="date-control"><input id="start" value="۱۴۰۵/۰۷/۰۳" readonly onclick="openJalaliPicker('start')" aria-label="انتخاب تاریخ شروع شمسی"><button type="button" class="calendar-btn" onclick="openJalaliPicker('start')" aria-label="بازکردن تقویم شروع">📅</button></div></div>
         <div class="field"><label for="end">تاریخ پایان دوره (شمسی)</label><div class="date-control"><input id="end" value="۱۴۰۵/۰۸/۰۳" readonly onclick="openJalaliPicker('end')" aria-label="انتخاب تاریخ پایان شمسی"><button type="button" class="calendar-btn" onclick="openJalaliPicker('end')" aria-label="بازکردن تقویم پایان">📅</button></div></div>
         <div class="field"><label>تعداد روز</label><input id="days" readonly></div>
@@ -143,7 +163,7 @@ h1{font-size:22px;margin:0 0 4px}.muted{color:#667788;font-size:12px}.grid{displ
       </div>
       <div class="notice">تاریخ‌ها شمسی هستند. با لمس هر تاریخ، تقویم جلالی باز می‌شود؛ تاریخ پایان به‌صورت پیش‌فرض امروز و تاریخ شروع ۳۰ روز قبل تنظیم می‌شود. تعداد روزها پس از انتخاب تاریخ‌ها خودکار محاسبه می‌شود. تعرفه‌های این نسخه مربوط به سال ۱۴۰۵ است.</div>
       <div class="row">
-        <button class="btn primary" onclick="calc(true)">محاسبه</button>
+        <button id="calculateBtn" type="button" class="btn primary">محاسبه</button>
         <button class="btn secondary" onclick="sampleWarm()">نمونه گرم اهواز</button>
         <button class="btn secondary" onclick="sampleCold()">آزمون ماه سرد</button>
       </div>
@@ -153,6 +173,12 @@ h1{font-size:22px;margin:0 0 4px}.muted{color:#667788;font-size:12px}.grid{displ
 
   <div id="result" style="display:none">
     <section id="summaryPanel" class="tab-panel">
+      <div id="inputSnapshot" class="input-snapshot">
+        <span>قرائت قبلی: <b id="usedPrev" class="snapshot-value" dir="ltr">—</b></span>
+        <span>قرائت جاری: <b id="usedCurr" class="snapshot-value" dir="ltr">—</b></span>
+        <span>بازه: <b id="usedDates" class="snapshot-value" dir="ltr">—</b></span>
+        <span>استان/شهر: <b id="usedPlace">—</b></span>
+      </div>
       <div class="card"><div class="metrics">
         <div class="metric"><div class="t">مصرف دوره</div><div id="r_kwh" class="v"></div><div class="muted">kWh</div></div>
         <div class="metric"><div class="t">کل روزها</div><div id="r_days" class="v"></div></div>
@@ -1905,18 +1931,49 @@ function tariff(zone,monthly,mode){const T=DATA.TARIFFS;
   if(zone===4){if(mode==='گرم'){if(monthly<=450)return [T.z4_warm_low,'تعرفه گرمسیر ۴ — ایام گرم تا ۴۵۰'];return [T.z4_warm_high,'تعرفه گرمسیر ۴ — مصرف بالاتر از الگو'];}return [monthly<=300?T.normal_low:T.normal_high,'تعرفه غیرگرم مناطق ۲/۳/۴'];}
   return [monthly<=300?T.normal_low:T.normal_high,'تعرفه عادی'];
 }
-function calculate(){
-  hideError();
-  const prev=+norm(document.getElementById('prev').value), curr=+norm(document.getElementById('curr').value);if(!Number.isFinite(prev)||!Number.isFinite(curr))throw new Error('قرائت کنتور نامعتبر است');if(curr<prev)throw new Error('قرائت جاری نباید کمتر از قرائت قبلی باشد');
-  const start=parseDate(document.getElementById('start').value), end=parseDate(document.getElementById('end').value), days=span(start,end),kwh=curr-prev,monthly=kwh*30/days;
-  const prov=document.getElementById('province').value,city=document.getElementById('city').value,br=breakdown(prov,city,start,end),zone=chooseZone(prov,city,start,end)||1;
+function readCurrentInputs(){
+  return {
+    prev:String(document.getElementById('prev').value),
+    curr:String(document.getElementById('curr').value),
+    start:String(document.getElementById('start').value),
+    end:String(document.getElementById('end').value),
+    prov:String(document.getElementById('province').value),
+    city:String(document.getElementById('city').value)
+  };
+}
+function calculate(input=readCurrentInputs()){
+  if(!input.prev.trim()||!input.curr.trim())throw new Error('لطفاً قرائت قبلی و قرائت جاری کنتور را وارد کنید.');
+  const prev=+norm(input.prev), curr=+norm(input.curr);
+  if(!Number.isFinite(prev)||!Number.isFinite(curr))throw new Error('قرائت کنتور نامعتبر است');
+  if(curr<prev)throw new Error('قرائت جاری نباید کمتر از قرائت قبلی باشد');
+  const start=parseDate(input.start), end=parseDate(input.end), days=span(start,end),kwh=curr-prev,monthly=kwh*30/days;
+  const prov=input.prov,city=input.city,br=breakdown(prov,city,start,end),zone=chooseZone(prov,city,start,end)||1;
   const [hotCoef,coldCoef]=DATA.ZONE_COEFF[zone];const weighted=br.hot*hotCoef+br.cold*coldCoef;const mode=br.hot===days?'گرم':(br.cold===days?'سرد/غیرگرم':'ترکیبی');
   const hotKwh=kwh*(br.hot/days),coldKwh=kwh*(br.cold/days);let rows=[],monthEnergy=0,periodEnergy=0,method='',split=[];
   if(mode!=='ترکیبی'){const [table,m]=tariff(zone,monthly,mode);const ap=applyTable(monthly,table);rows=ap.rows;monthEnergy=ap.total;periodEnergy=monthEnergy*days/30;method=m;}
   else {if(br.hot){const hm=hotKwh*30/br.hot,[t,m]=tariff(zone,hm,'گرم'),ap=applyTable(hm,t);split.push({mode:'گرم',days:br.hot,monthly:hm,energy:ap.total*br.hot/30,method:m,rows:ap.rows})}if(br.cold){const cm=coldKwh*30/br.cold,[t,m]=tariff(zone,cm,'سرد/غیرگرم'),ap=applyTable(cm,t);split.push({mode:'سرد/غیرگرم',days:br.cold,monthly:cm,energy:ap.total*br.cold/30,method:m,rows:ap.rows})}periodEnergy=split.reduce((s,x)=>s+x.energy,0);monthEnergy=periodEnergy*30/days;method='دوره ترکیبی — محاسبه تفکیکی گرم/سرد'}
-  return {prev,curr,kwh,days,monthly,prov,city,br,zone,hotCoef,coldCoef,weighted,mode,hotKwh,coldKwh,hotMonthly:br.hot?hotKwh*30/br.hot:0,coldMonthly:br.cold?coldKwh*30/br.cold:0,rows,monthEnergy,periodEnergy,method,split};
+  return {prev,curr,kwh,days,monthly,prov,city,inputStart:input.start,inputEnd:input.end,br,zone,hotCoef,coldCoef,weighted,mode,hotKwh,coldKwh,hotMonthly:br.hot?hotKwh*30/br.hot:0,coldMonthly:br.cold?coldKwh*30/br.cold:0,rows,monthEnergy,periodEnergy,method,split};
 }
-function calc(showSummary=true){try{const d=calculate();render(d);hideError();if(showSummary)activateTab('summaryPanel',false);return true}catch(e){showError(e.message);return false}}
+function calc(showSummary=true){
+  const snapshot=readCurrentInputs();
+  if(!snapshot.prev.trim()||!snapshot.curr.trim()){
+    document.getElementById('result').style.display='none';
+    if(showSummary)showError('لطفاً قرائت قبلی و قرائت جاری کنتور را وارد کنید.');
+    else hideError();
+    return false;
+  }
+  try{
+    const d=calculate(snapshot);
+    render(d);
+    hideError();
+    if(showSummary)activateTab('summaryPanel',false);
+    return true;
+  }catch(e){
+    document.getElementById('result').style.display='none';
+    showError(e.message);
+    return false;
+  }
+}
 function activateTab(target,recalculate=true){
   if(target!=='inputPanel' && recalculate){
     if(!calc(false))return;
@@ -1936,6 +1993,7 @@ function printReport(){
 }
 function render(d){
   document.getElementById('result').style.display='block';document.getElementById('days').value=d.days;document.getElementById('zone').value='گرمسیر '+d.zone;
+  set('usedPrev',fa(d.prev));set('usedCurr',fa(d.curr));set('usedDates',String(d.inputStart)+' ← '+String(d.inputEnd));set('usedPlace',d.prov+' / '+d.city);document.getElementById('inputSnapshot').style.opacity='1';
   set('r_kwh',fa(d.kwh));set('r_days',fa(d.days));set('r_hot',fa(d.br.hot));set('r_cold',fa(d.br.cold));set('r_monthly',fa(d.monthly));set('r_zone','گرمسیر '+d.zone);
   set('r_mode',d.mode);set('r_method',d.method);
   set('r_logic',d.br.cold===d.days&&d.br.hot===0?'✓ دوره کاملاً سرد: فقط تعرفه سرد/غیرگرم فعال است. تعرفه گرم اعمال نشده است.':(d.br.hot===d.days&&d.br.cold===0?'✓ دوره کاملاً گرم: فقط تعرفه گرم فعال است.':'✓ دوره ترکیبی: بخش گرم و سرد جداگانه محاسبه شده است.'));
@@ -2022,6 +2080,6 @@ function fillProvinces(){const p=document.getElementById('province');p.innerHTML
 function fillCities(){const p=document.getElementById('province').value,c=document.getElementById('city');c.innerHTML='';(DATA.REGIONS[p]||[]).forEach(x=>{const o=document.createElement('option');o.value=x;o.textContent=x;c.appendChild(o)});if(p==='خوزستان')c.value='اهواز'}
 function sampleWarm(){document.getElementById('prev').value='84069';document.getElementById('curr').value='92034';setJalaliField('start','1405/05/03');setJalaliField('end','1405/07/03');document.getElementById('province').value='خوزستان';fillCities();document.getElementById('city').value='اهواز';calc()}
 function sampleCold(){document.getElementById('prev').value='10000';document.getElementById('curr').value='13000';setJalaliField('start','1405/10/03');setJalaliField('end','1405/11/03');document.getElementById('province').value='خوزستان';fillCities();document.getElementById('city').value='اهواز';calc()}
-document.getElementById('province').addEventListener('change',fillCities);document.querySelectorAll('.tab-btn[data-target]').forEach(b=>b.addEventListener('click',()=>activateTab(b.dataset.target)));document.getElementById('jalaliModal').addEventListener('click',e=>{if(e.target.id==='jalaliModal')closeJalaliPicker()});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeJalaliPicker()});fillProvinces();setDefaultJalaliDates();applyResponsiveLabels();calc(false);activateTab('inputPanel');
+document.getElementById('calculateBtn').addEventListener('click',()=>calc(true));document.getElementById('province').addEventListener('change',()=>{fillCities();calc(false)});document.getElementById('prev').addEventListener('input',()=>{if(document.getElementById('result').style.display!=='none')document.getElementById('inputSnapshot').style.opacity='.55'});document.getElementById('curr').addEventListener('input',()=>{if(document.getElementById('result').style.display!=='none')document.getElementById('inputSnapshot').style.opacity='.55'});document.querySelectorAll('.tab-btn[data-target]').forEach(b=>b.addEventListener('click',()=>activateTab(b.dataset.target)));document.getElementById('jalaliModal').addEventListener('click',e=>{if(e.target.id==='jalaliModal')closeJalaliPicker()});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeJalaliPicker()});fillProvinces();setDefaultJalaliDates();applyResponsiveLabels();document.getElementById('days').value=fa(span(parseDate(document.getElementById('start').value),parseDate(document.getElementById('end').value)));document.getElementById('result').style.display='none';hideError();activateTab('inputPanel');
 </script>
 </body></html>
