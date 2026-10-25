@@ -35,7 +35,58 @@ h1{font-size:22px;margin:0 0 4px}.muted{color:#667788;font-size:12px}.grid{displ
  .tag.hot,.tag.cold{background:#fff!important;border:1px solid #aaa}
  .summary-break{break-before:page}
 }
-@media(max-width:650px){.grid{grid-template-columns:1fr}.metrics{grid-template-columns:1fr 1fr}.metric:last-child{grid-column:1/-1}.wrap{padding:8px}h1{font-size:19px}.top-tabs{position:static;overflow-x:auto;flex-wrap:nowrap}.tab-btn{font-size:12px;padding:8px 10px}.tab-spacer{display:none}}
+.tier-mobile-list,.tier-total-mobile{display:none}
+@media screen and (max-width:650px){
+  .grid{grid-template-columns:1fr}
+  .metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .metric:last-child{grid-column:1/-1}
+  .wrap{padding:6px}
+  .card{padding:11px;border-radius:13px;margin-bottom:9px}
+  h1{font-size:20px}
+  h3{font-size:17px;margin:0 0 8px}
+  .top-tabs{position:static;overflow-x:auto;flex-wrap:nowrap;gap:4px;padding:4px}
+  .tab-btn{font-size:13px;padding:9px 10px;flex-shrink:0}
+  .tab-spacer{display:none}
+  .table-wrap{overflow:visible!important;width:100%}
+  .table{width:100%!important;min-width:0!important;table-layout:fixed;border-collapse:separate;border-spacing:0}
+  .table thead{display:none}
+  .table tbody{display:block;width:100%}
+  .table tbody tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;margin:0 0 9px;border:1px solid #d5dee8;border-radius:12px;overflow:hidden;background:#fff}
+  .table tbody td,.table tbody th{display:block;min-width:0;text-align:right;vertical-align:top;overflow-wrap:anywhere;word-break:normal;border:0;border-left:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;padding:9px 9px;font-size:14px;line-height:1.45}
+  .table tbody td::before{content:attr(data-label);display:block;font-size:11px;line-height:1.35;font-weight:700;color:#607083;margin-bottom:4px}
+  .table tbody tr td:last-child{border-left:0}
+  .table tbody th{grid-column:1/-1;background:#f1f5f9;font-size:14px;font-weight:700;padding:8px 10px;border-bottom:1px solid #d5dee8}
+  .table tbody td[colspan]{grid-column:1/-1}
+  .table.weight-table tbody td[data-label="روز وزنی"]{grid-column:1/-1}
+  .table.info-table tbody tr{grid-template-columns:minmax(0,.9fr) minmax(0,1.4fr)}
+  .table.info-table tbody th{grid-column:auto;display:flex;align-items:center;background:#f8fafc}
+  .table.info-table tbody td::before{display:none}
+  .method-table{display:block;width:100%;border-collapse:separate;border-spacing:0}
+  .method-table thead{display:none}
+  .method-table tbody{display:block;width:100%}
+  .method-table tbody tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin:0 0 10px;border:1px solid #d5dee8;border-radius:12px;overflow:hidden;background:#fff}
+  .method-table tbody td{display:block;min-width:0;overflow-wrap:anywhere;padding:10px;font-size:14px;line-height:1.55;text-align:right;border:0;border-left:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0}
+  .method-table tbody td::before{content:attr(data-label);display:block;font-size:11px;font-weight:700;color:#607083;margin-bottom:5px}
+  .method-table tbody td:first-child{grid-column:1/-1;background:#f1f5f9;font-size:15px;font-weight:700}
+  .method-lead{font-size:14px;padding:10px}
+  .notice{font-size:13px;line-height:1.6}
+  .muted{font-size:13px;line-height:1.55}
+  .metric .t{font-size:12px}
+  .metric .v{font-size:20px}
+  .tag{font-size:12px;padding:3px 8px}
+  /* The wide 7-column tariff table becomes readable 2-column cards. */
+  .tier-table-wrap{display:none!important}
+  .tier-mobile-list{display:grid;gap:9px;margin-top:10px}
+  .tier-mobile-card{border:1px solid #cfd9e5;border-radius:13px;background:#fff;padding:10px}
+  .tier-mobile-title{font-size:15px;font-weight:700;background:#eef4fa;border-radius:8px;padding:7px 9px;margin-bottom:8px;overflow-wrap:anywhere}
+  .tier-mobile-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .tier-mobile-field{border:1px solid #e2e8f0;border-radius:9px;padding:7px;min-width:0}
+  .tier-mobile-label{font-size:11px;line-height:1.35;color:#607083;font-weight:700;margin-bottom:3px}
+  .tier-mobile-value{font-size:14px;line-height:1.45;font-weight:700;overflow-wrap:anywhere}
+  .tier-total-mobile{display:grid;gap:7px;margin-top:10px}
+  .tier-total-line{display:flex;align-items:center;justify-content:space-between;gap:12px;border-radius:10px;background:#edf6ff;padding:10px;font-size:14px;font-weight:700}
+  .tier-total-line strong{font-size:16px;white-space:nowrap}
+}
 </style>
 </head>
 <body>
@@ -101,10 +152,10 @@ h1{font-size:22px;margin:0 0 4px}.muted{color:#667788;font-size:12px}.grid{displ
 
       <div class="card">
         <h3>جمع‌بندی گرم و سرد</h3>
-        <div class="table-wrap"><table class="table"><tbody>
-          <tr><th>گرم</th><td id="hot_days"></td><td id="hot_pct"></td><td>ضریب: <span id="hot_coef"></span></td></tr>
-          <tr><th>سرد/غیرگرم</th><td id="cold_days"></td><td id="cold_pct"></td><td>ضریب: <span id="cold_coef"></span></td></tr>
-          <tr><th>روز وزنی</th><td colspan="3" id="weighted"></td></tr>
+        <div class="table-wrap"><table class="table weight-table"><tbody>
+          <tr><th>گرم</th><td id="hot_days" data-label="تعداد روز"></td><td id="hot_pct" data-label="سهم از دوره"></td><td data-label="ضریب گرم"><span id="hot_coef"></span></td></tr>
+          <tr><th>سرد/غیرگرم</th><td id="cold_days" data-label="تعداد روز"></td><td id="cold_pct" data-label="سهم از دوره"></td><td data-label="ضریب غیرگرم"><span id="cold_coef"></span></td></tr>
+          <tr><th>روز وزنی</th><td colspan="3" id="weighted" data-label="مقدار روز وزنی"></td></tr>
         </tbody></table></div>
       </div>
 
@@ -119,7 +170,7 @@ h1{font-size:22px;margin:0 0 4px}.muted{color:#667788;font-size:12px}.grid{displ
 
       <div class="card">
         <h3>اطلاعات منطقه</h3>
-        <div class="table-wrap"><table class="table"><tbody>
+        <div class="table-wrap"><table class="table info-table"><tbody>
           <tr><th>استان</th><td id="rp"></td></tr>
           <tr><th>شهر/شهرستان</th><td id="rc"></td></tr>
           <tr><th>منطقه تشخیص داده‌شده</th><td id="rz"></td></tr>
@@ -142,7 +193,7 @@ h1{font-size:22px;margin:0 0 4px}.muted{color:#667788;font-size:12px}.grid{displ
       <div class="card">
         <h3>جدول محاسبه پله‌ای</h3>
         <div class="muted">در دوره ترکیبی، پله‌ها برای بخش گرم و سرد جدا محاسبه می‌شوند. مبلغ دوره هر ردیف = مبلغ ۳۰روزه همان پله × تعداد روز آن بخش ÷ ۳۰.</div>
-        <div class="table-wrap"><table class="table"><thead><tr><th>بخش</th><th>از</th><th>تا</th><th>kWh ماهانه</th><th>نرخ ریال/kWh</th><th>مبلغ پله برای ۳۰ روز (ریال)</th><th>سهم پله در بهای دوره (ریال)</th></tr></thead><tbody id="tiers"></tbody><tfoot><tr><th colspan="6">بهای ماهانه معادل کل دوره</th><th id="monthsum"></th></tr><tr><th colspan="6">بهای انرژی کل دوره</th><th id="periodsum"></th></tr></tfoot></table></div>
+        <div class="table-wrap tier-table-wrap"><table class="table"><thead><tr><th>بخش</th><th>از</th><th>تا</th><th>kWh ماهانه</th><th>نرخ ریال/kWh</th><th>مبلغ پله برای ۳۰ روز (ریال)</th><th>سهم پله در بهای دوره (ریال)</th></tr></thead><tbody id="tiers"></tbody><tfoot><tr><th colspan="6">بهای ماهانه معادل کل دوره</th><th id="monthsum"></th></tr><tr><th colspan="6">بهای انرژی کل دوره</th><th id="periodsum"></th></tr></tfoot></table></div><div id="tiersMobile" class="tier-mobile-list" aria-label="جدول پله‌ای برای صفحه کوچک"></div><div class="tier-total-mobile"><div class="tier-total-line"><span>بهای ماهانه معادل کل دوره</span><strong id="monthsumMobile"></strong></div><div class="tier-total-line"><span>بهای انرژی کل دوره</span><strong id="periodsumMobile"></strong></div></div>
       </div>
     </section>
   </div>
@@ -1782,16 +1833,38 @@ function render(d){
   set('rp',d.prov);set('rc',d.city);set('rz','گرمسیر '+d.zone);set('rzs',d.br.zones.length?d.br.zones.map(z=>'گرمسیر '+z).join('، '):'—');
   const seg=document.getElementById('segments');seg.innerHTML='';d.br.segments.forEach(x=>{const tr=document.createElement('tr');tr.innerHTML=`<td><span class="tag ${x.label==='گرم'?'hot':'cold'}">${x.label}</span></td><td>${x.start}</td><td>${x.end}</td><td>${fa(x.days)}</td><td>${x.zones.length?x.zones.map(z=>'گرمسیر '+z).join('، '):'—'}</td>`;seg.appendChild(tr)});
   const tiers=document.getElementById('tiers');tiers.innerHTML='';
+  const tiersMobile=document.getElementById('tiersMobile');tiersMobile.innerHTML='';
+  const tierHeaders=['بخش','از','تا','مصرف ماهانه kWh','نرخ ریال/kWh','مبلغ پله برای ۳۰ روز (ریال)','سهم پله در بهای دوره (ریال)'];
   const addTierRow=(mode,days,x)=>{
     const tr=document.createElement('tr');
     const periodAmount=x.amount*days/30;
     const vals=[mode,fa(x.from),x.to===null?'بیشتر':fa(x.to),fa(x.qty),fa(x.rate),fa(x.amount),fa(periodAmount)];
-    vals.forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.appendChild(td)});
+    vals.forEach((v,i)=>{const td=document.createElement('td');td.textContent=v;td.setAttribute('data-label',tierHeaders[i]);tr.appendChild(td)});
     tiers.appendChild(tr);
+
+    const card=document.createElement('div');card.className='tier-mobile-card';
+    const heading=document.createElement('div');heading.className='tier-mobile-title';
+    heading.textContent=mode+' · پله '+fa(x.from)+' تا '+(x.to===null?'بیشتر':fa(x.to));
+    card.appendChild(heading);
+    const grid=document.createElement('div');grid.className='tier-mobile-grid';
+    const fields=[
+      ['مصرف ماهانه',fa(x.qty)+' kWh'],
+      ['نرخ هر kWh',fa(x.rate)+' ریال'],
+      ['مبلغ پله برای ۳۰ روز',fa(x.amount)+' ریال'],
+      ['سهم پله در این دوره',fa(periodAmount)+' ریال']
+    ];
+    fields.forEach(([label,value])=>{
+      const box=document.createElement('div');box.className='tier-mobile-field';
+      const lab=document.createElement('div');lab.className='tier-mobile-label';lab.textContent=label;
+      const val=document.createElement('div');val.className='tier-mobile-value';val.textContent=value;
+      box.append(lab,val);grid.appendChild(box);
+    });
+    card.appendChild(grid);tiersMobile.appendChild(card);
   };
   if(d.mode==='ترکیبی')d.split.forEach(part=>part.rows.forEach(x=>addTierRow(part.mode,part.days,x)));
   else d.rows.forEach(x=>addTierRow(d.mode,d.days,x));
   set('monthsum',fa(d.monthEnergy)+' ریال');set('periodsum',fa(d.periodEnergy)+' ریال');
+  set('monthsumMobile',fa(d.monthEnergy)+' ریال');set('periodsumMobile',fa(d.periodEnergy)+' ریال');
   renderMethod(d);
 }
 function renderMethod(d){
@@ -1812,12 +1885,25 @@ function renderMethod(d){
   }
   rows.push(['بهای ماهانه معادل کل دوره','بهای انرژی دوره × ۳۰ ÷ تعداد روز',fa(d.periodEnergy)+' × ۳۰ ÷ '+fa(d.days)+' = '+fa(d.monthEnergy)+' ریال']);
   const tbody=document.getElementById('methodRows');tbody.innerHTML='';
-  rows.forEach(r=>{const tr=document.createElement('tr');r.forEach(val=>{const td=document.createElement('td');td.textContent=val;tr.appendChild(td)});tbody.appendChild(tr)});
+  const methodLabels=['مرحله','فرمول','جایگذاری و نتیجه'];
+  rows.forEach(r=>{const tr=document.createElement('tr');r.forEach((val,i)=>{const td=document.createElement('td');td.textContent=val;td.setAttribute('data-label',methodLabels[i]);tr.appendChild(td)});tbody.appendChild(tr)});
+  applyResponsiveLabels();
   let note;
   if(d.mode==='سرد/غیرگرم')note='دوره کاملاً سرد/غیرگرم است: '+fa(d.br.cold)+' روز سرد و '+fa(d.br.hot)+' روز گرم. بنابراین فقط جدول «'+d.method+'» استفاده شده و جدول تعرفه گرم برای این دوره اعمال نشده است.';
   else if(d.mode==='گرم')note='دوره کاملاً گرم است: '+fa(d.br.hot)+' روز گرم و '+fa(d.br.cold)+' روز سرد/غیرگرم. فقط جدول «'+d.method+'» استفاده شده است.';
   else note='دوره ترکیبی است؛ مصرف به نسبت روزهای گرم و سرد تفکیک شده و برای هر بخش جدول تعرفه مربوط به همان وضعیت، جداگانه اعمال شده است.';
   set('methodNote',note);
+}
+function applyResponsiveLabels(){
+  document.querySelectorAll('.table,.method-table').forEach(table=>{
+    const headers=[...table.querySelectorAll('thead th')].map(th=>th.textContent.trim());
+    table.querySelectorAll('tbody tr').forEach(row=>{
+      [...row.children].forEach((cell,i)=>{
+        if(cell.tagName!=='TD'||cell.hasAttribute('data-label'))return;
+        if(headers.length)cell.setAttribute('data-label',headers[i]||'مقدار');
+      });
+    });
+  });
 }
 function set(id,v){document.getElementById(id).textContent=v;}
 function showError(m){const e=document.getElementById('error');e.textContent=m;e.style.display='block'}function hideError(){document.getElementById('error').style.display='none'}
@@ -1825,6 +1911,6 @@ function fillProvinces(){const p=document.getElementById('province');p.innerHTML
 function fillCities(){const p=document.getElementById('province').value,c=document.getElementById('city');c.innerHTML='';(DATA.REGIONS[p]||[]).forEach(x=>{const o=document.createElement('option');o.value=x;o.textContent=x;c.appendChild(o)});if(p==='خوزستان')c.value='اهواز'}
 function sampleWarm(){document.getElementById('prev').value='84069';document.getElementById('curr').value='92034';document.getElementById('start').value='1405/05/03';document.getElementById('end').value='1405/07/03';document.getElementById('province').value='خوزستان';fillCities();document.getElementById('city').value='اهواز';calc()}
 function sampleCold(){document.getElementById('prev').value='10000';document.getElementById('curr').value='13000';document.getElementById('start').value='1405/10/03';document.getElementById('end').value='1405/11/03';document.getElementById('province').value='خوزستان';fillCities();document.getElementById('city').value='اهواز';calc()}
-document.getElementById('province').addEventListener('change',fillCities);document.querySelectorAll('.tab-btn[data-target]').forEach(b=>b.addEventListener('click',()=>activateTab(b.dataset.target)));fillProvinces();calc(false);activateTab('inputPanel');
+document.getElementById('province').addEventListener('change',fillCities);document.querySelectorAll('.tab-btn[data-target]').forEach(b=>b.addEventListener('click',()=>activateTab(b.dataset.target)));fillProvinces();applyResponsiveLabels();calc(false);activateTab('inputPanel');
 </script>
 </body></html>
