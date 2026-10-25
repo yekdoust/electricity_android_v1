@@ -88,6 +88,29 @@ h1{font-size:22px;margin:0 0 4px}.muted{color:#667788;font-size:12px}.grid{displ
   .tier-total-line{display:flex;align-items:center;justify-content:space-between;gap:12px;border-radius:10px;background:#edf6ff;padding:10px;font-size:14px;font-weight:700}
   .tier-total-line strong{font-size:16px;white-space:nowrap}
 }
+
+.date-control{display:flex;gap:6px;align-items:stretch}
+.date-control input{flex:1;min-width:0;cursor:pointer;background:#fbfdff}
+.calendar-btn{width:48px;flex-shrink:0;border:1px solid #cfd8e3;border-radius:10px;background:#edf4ff;font-size:20px;cursor:pointer}
+.calendar-backdrop{position:fixed;inset:0;z-index:1000;background:rgba(14,25,42,.48);display:flex;align-items:center;justify-content:center;padding:14px}
+.calendar-dialog{width:min(100%,420px);background:#fff;border-radius:18px;padding:16px;box-shadow:0 20px 70px #0003;direction:rtl}
+.calendar-title-row,.calendar-month-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.calendar-title-row h3{margin:0;font-size:17px}
+.calendar-close,.calendar-nav{border:0;border-radius:10px;background:#edf2f8;color:#1f2937;width:42px;height:42px;font-size:22px;cursor:pointer}
+.calendar-month-row{margin:13px 0}
+.calendar-month-row strong{font-size:16px}
+.calendar-weekdays,.calendar-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;text-align:center}
+.calendar-weekdays span{font-size:12px;font-weight:bold;color:#607083;padding:5px 0}
+.calendar-day,.calendar-empty{min-height:42px}
+.calendar-day{border:1px solid #dbe4ed;background:#fff;border-radius:10px;font:inherit;font-size:15px;cursor:pointer}
+.calendar-day:active{transform:scale(.96)}
+.calendar-day.selected{background:#2563eb;color:#fff;border-color:#2563eb;font-weight:bold}
+.calendar-day.today:not(.selected){border:2px solid #16a34a;color:#166534;font-weight:bold}
+.calendar-actions{display:flex;justify-content:space-between;gap:8px;margin-top:15px}
+.calendar-actions .btn{flex:1}
+.calendar-caption{font-size:11px;color:#718096;text-align:center;margin-top:10px}
+@media(max-width:650px){.calendar-backdrop{align-items:flex-end;padding:0}.calendar-dialog{width:100%;max-width:none;border-radius:20px 20px 0 0;padding:16px 14px calc(18px + env(safe-area-inset-bottom))}.calendar-day,.calendar-empty{min-height:44px}.calendar-day{font-size:16px}.calendar-month-row strong{font-size:17px}.calendar-weekdays span{font-size:13px}}
+
 </style>
 </head>
 <body>
@@ -111,14 +134,14 @@ h1{font-size:22px;margin:0 0 4px}.muted{color:#667788;font-size:12px}.grid{displ
       <div class="grid">
         <div class="field"><label>قرائت قبلی</label><input id="prev" value="84069" inputmode="numeric"></div>
         <div class="field"><label>قرائت جاری</label><input id="curr" value="92034" inputmode="numeric"></div>
-        <div class="field"><label>تاریخ شروع دوره</label><input id="start" value="1405/05/03"></div>
-        <div class="field"><label>تاریخ پایان دوره</label><input id="end" value="1405/07/03"></div>
+        <div class="field"><label for="start">تاریخ شروع دوره (شمسی)</label><div class="date-control"><input id="start" value="۱۴۰۵/۰۷/۰۳" readonly onclick="openJalaliPicker('start')" aria-label="انتخاب تاریخ شروع شمسی"><button type="button" class="calendar-btn" onclick="openJalaliPicker('start')" aria-label="بازکردن تقویم شروع">📅</button></div></div>
+        <div class="field"><label for="end">تاریخ پایان دوره (شمسی)</label><div class="date-control"><input id="end" value="۱۴۰۵/۰۸/۰۳" readonly onclick="openJalaliPicker('end')" aria-label="انتخاب تاریخ پایان شمسی"><button type="button" class="calendar-btn" onclick="openJalaliPicker('end')" aria-label="بازکردن تقویم پایان">📅</button></div></div>
         <div class="field"><label>تعداد روز</label><input id="days" readonly></div>
         <div class="field"><label>استان</label><select id="province"></select></div>
         <div class="field"><label>شهر/شهرستان</label><select id="city"></select></div>
         <div class="field"><label>منطقه تعرفه</label><input id="zone" readonly></div>
       </div>
-      <div class="notice">روزهای گرم و سرد از تاریخ واقعی دوره و قواعد درج‌شده برای همان شهر محاسبه می‌شوند. در دوره کاملاً سرد، جدول تعرفه گرم اعمال نمی‌شود.</div>
+      <div class="notice">تاریخ‌ها شمسی هستند. با لمس هر تاریخ، تقویم جلالی باز می‌شود؛ تاریخ پایان به‌صورت پیش‌فرض امروز و تاریخ شروع ۳۰ روز قبل تنظیم می‌شود. تعداد روزها پس از انتخاب تاریخ‌ها خودکار محاسبه می‌شود. تعرفه‌های این نسخه مربوط به سال ۱۴۰۵ است.</div>
       <div class="row">
         <button class="btn primary" onclick="calc(true)">محاسبه</button>
         <button class="btn secondary" onclick="sampleWarm()">نمونه گرم اهواز</button>
@@ -197,6 +220,16 @@ h1{font-size:22px;margin:0 0 4px}.muted{color:#667788;font-size:12px}.grid{displ
         <div class="table-wrap tier-table-wrap"><table class="table"><thead><tr><th>بخش</th><th>از</th><th>تا</th><th>kWh ماهانه</th><th>نرخ ریال/kWh</th><th>مبلغ پله برای ۳۰ روز (ریال)</th><th>سهم پله در بهای دوره (ریال)</th></tr></thead><tbody id="tiers"></tbody><tfoot><tr><th colspan="6">بهای ماهانه معادل کل دوره</th><th id="monthsum"></th></tr><tr><th colspan="6">بهای انرژی کل دوره</th><th id="periodsum"></th></tr></tfoot></table></div><div id="tiersMobile" class="tier-mobile-list" aria-label="جدول پله‌ای برای صفحه کوچک"></div><div class="tier-total-mobile"><div class="tier-total-line"><span>بهای ماهانه معادل کل دوره</span><strong id="monthsumMobile"></strong></div><div class="tier-total-line"><span>بهای انرژی کل دوره</span><strong id="periodsumMobile"></strong></div></div>
       </div>
     </section>
+  </div>
+</div>
+<div id="jalaliModal" class="calendar-backdrop" role="dialog" aria-modal="true" aria-labelledby="pickerTitle" style="display:none">
+  <div class="calendar-dialog">
+    <div class="calendar-title-row"><h3 id="pickerTitle">انتخاب تاریخ شمسی</h3><button type="button" class="calendar-close" onclick="closeJalaliPicker()" aria-label="بستن">✕</button></div>
+    <div class="calendar-month-row"><button type="button" id="monthPrev" class="calendar-nav" onclick="shiftJalaliMonth(-1)" aria-label="ماه قبل">‹</button><strong id="pickerMonthLabel">آبان ۱۴۰۵</strong><button type="button" id="monthNext" class="calendar-nav" onclick="shiftJalaliMonth(1)" aria-label="ماه بعد">›</button></div>
+    <div class="calendar-weekdays"><span>ش</span><span>ی</span><span>د</span><span>س</span><span>چ</span><span>پ</span><span>ج</span></div>
+    <div id="pickerDays" class="calendar-days"></div>
+    <div class="calendar-actions"><button type="button" class="btn secondary" onclick="chooseTodayForField()">امروز</button><button type="button" class="btn secondary" onclick="closeJalaliPicker()">بستن</button></div>
+    <div class="calendar-caption">تقویم شمسی · تعرفه‌های برنامه برای سال ۱۴۰۵</div>
   </div>
 </div>
 <script>
