@@ -17,13 +17,18 @@ jobs:
           packages: 'platforms;android-35 build-tools;35.0.0'
       - name: Build
         uses: gradle/actions/setup-gradle@v4
-      - name: Assemble debug APK
-        run: gradle :app:assembleDebug
+      - name: Assemble debug and release APKs
+        run: gradle :app:assembleDebug :app:assembleRelease
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: electricity-1405-apk
           path: app/build/outputs/apk/debug/app-debug.apk
+      - name: Upload unsigned release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: electricity-1405-release-unsigned
+          path: app/build/outputs/apk/release/app-release-unsigned.apk
       - name: Package source code
         run: git archive --format=zip --output=electricity-1405-source-v1.7.zip HEAD
       - name: Upload source ZIP

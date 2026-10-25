@@ -44,3 +44,7 @@ APK در مسیر `app/build/outputs/apk/debug/app-debug.apk` ساخته می‌
 
 سورس کامل نسخه ۱٫۷ شامل فایل‌های Java، HTML/JavaScript، داده‌های JSON تعرفه و شهرها، فایل‌های Gradle و Workflow ساخت APK است. برای دریافت یک فایل فشرده از سورس در GitHub، در بخش Actions اجرای موفق «Build APK» را باز کنید و Artifact با نام `electricity-1405-source` را دانلود کنید. همچنین نسخه متناظر در مخزن GitHub در دسترس است:
 https://github.com/yekdoust/electricity_android_v1
+
+
+## نصب و انتشار نسخه ۱٫۷
+راهنمای دقیق ساخت کلید و امضای APK برای انتشار در کافه‌بازار و مایکت در فایل `PUBLISH_MARKETS_FA.txt` قرار دارد. به‌روزرسانی Workflow نیز Artifact جداگانه `electricity-1405-release-unsigned` تولید می‌کند؛ این فایل را پیش از انتشار باید با کلید خصوصی توسعه‌دهنده امضا کرد.

@@ -1,0 +1,47 @@
+راهنمای آماده‌سازی نسخه ۱٫۷ برای نصب و انتشار در کافه‌بازار و مایکت
+=====================================================================
+
+۱) کدام فایل برای چه کاری است؟
+- app-debug.apk (Artifact با نام electricity-1405-apk): فقط برای نصب و آزمایش. با کلید Debug امضا شده و نسخه انتشار بازار نیست.
+- app-release-unsigned.apk (Artifact با نام electricity-1405-release-unsigned): نسخه Release ساخته‌شده، اما بدون امضای انتشار؛ باید با کلید خصوصی خودتان امضا شود.
+- کلید keystore (.jks) را هرگز در مخزن عمومی، ZIP سورس یا پیام عمومی قرار ندهید.
+
+۲) دانلود فایل Release بدون امضا
+1. این مخزن را باز کنید: https://github.com/yekdoust/electricity_android_v1
+2. وارد Actions شوید و آخرین اجرای موفق «Build APK» را باز کنید.
+3. در بخش Artifacts فایل electricity-1405-release-unsigned را دانلود و Extract کنید.
+4. فایل app-release-unsigned.apk را نگه دارید.
+
+۳) ساخت کلید انتشار روی رایانه خودتان (فقط یک بار)
+در PowerShell فرمان زیر را اجرا کنید. یک مسیر امن در پوشه Documents انتخاب شده است:
+keytool -genkeypair -v -keystore "$env:USERPROFILE\Documents\electricity1405-release.jks" -alias electricity1405 -keyalg RSA -keysize 2048 -validity 10000
+
+- رمز مخزن کلید و اطلاعات گواهی را به پرسش‌های keytool پاسخ دهید.
+- رمز را در متن فرمان ننویسید؛ هنگام درخواست، آن را وارد کنید.
+- فایل electricity1405-release.jks و رمزهای آن را در دو محل امن پشتیبان بگیرید.
+- اگر این نسخه در هر یک از فروشگاه‌ها منتشر شد، تمام نسخه‌های آینده باید با همین کلید امضا شوند. گم کردن کلید می‌تواند به‌روزرسانی همان برنامه را ناممکن کند.
+- این کلید مخصوص صاحب برنامه است؛ کلید عمومی/پیش‌فرض Debug را برای انتشار استفاده نکنید.
+
+۴) امضای APK با Android SDK Build Tools
+پیش‌نیاز: نصب بودن Android SDK Build-Tools 35.0.0. مسیر پیش‌فرض SDK در ویندوز معمولاً:
+$env:LOCALAPPDATA\Android\Sdk
+
+فایل app-release-unsigned.apk و فرمان‌های زیر را در پوشه کاری یکسان قرار دهید. در PowerShell اجرا کنید:
+$tools = "$env:LOCALAPPDATA\Android\Sdk\build-tools\35.0.0"
+& "$tools\zipalign.exe" -f -v 4 ".\app-release-unsigned.apk" ".\app-release-aligned.apk"
+& "$tools\apksigner.bat" sign --ks "$env:USERPROFILE\Documents\electricity1405-release.jks" --ks-key-alias electricity1405 --out ".\electricity1405-v1.7-release.apk" ".\app-release-aligned.apk"
+& "$tools\apksigner.bat" verify --verbose --print-certs ".\electricity1405-v1.7-release.apk"
+
+اگر خطای مسیر فایل داد، مسیر کامل فایل‌ها را وارد کنید. اگر Android SDK در مسیر دیگری نصب شده، مسیر $tools را اصلاح کنید. هنگام امضا، رمزها را فقط در پاسخ به درخواست ابزار وارد کنید؛ در فرمان قرار ندهید.
+
+۵) انتشار
+- ابتدا electricity1405-v1.7-release.apk را روی گوشی واقعی نصب و آزمون کنید.
+- همین APK امضاشده را می‌توانید برای ثبت برنامه در پنل توسعه‌دهندگان کافه‌بازار و مایکت بارگذاری کنید، مشروط به پذیرش فرمت و الزامات جاری هر فروشگاه.
+- عنوان، توضیح، دسته‌بندی، آیکون، تصاویر و اطلاعات ناشر باید در پنل هر فروشگاه تکمیل شود.
+- من به پنل‌های حساب شما وارد نشده‌ام و برنامه را از طرف شما منتشر نکرده‌ام.
+
+۶) توجه به شناسه برنامه
+شناسه فعلی برنامه در Gradle برابر com.example.electricity1405 است. اگر هنوز در هیچ فروشگاهی منتشر نشده، بهتر است پیش از نخستین انتشار درباره انتخاب شناسه اختصاصی ناشر تصمیم بگیرید؛ تغییر شناسه پس از انتشار، معمولاً برنامه‌ای متفاوت ایجاد می‌کند.
+
+مخزن سورس:
+https://github.com/yekdoust/electricity_android_v1
