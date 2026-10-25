@@ -1,0 +1,19 @@
+name: Package Source ZIP
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+permissions:
+  contents: read
+jobs:
+  package-source:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Package tracked source files
+        run: git archive --format=zip --output=electricity-1405-source-v1.7.zip HEAD
+      - name: Upload source ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: electricity-1405-source
+          path: electricity-1405-source-v1.7.zip
