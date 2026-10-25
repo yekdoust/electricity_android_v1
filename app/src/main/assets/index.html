@@ -1789,6 +1789,83 @@ const DATA = {
 
 function fa(x){return Number(x).toLocaleString('fa-IR',{maximumFractionDigits:2});}
 function norm(s){return String(s).replace(/[۰-۹]/g,d=>String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d))).replace(/[٠-٩]/g,d=>String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))).replace(/[,،]/g,'').trim();}
+const JALALI_MONTHS=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+let pickerTarget='end',pickerMonth=8;
+function toFaDigits(s){return String(s).replace(/\\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[Number(d)]);}
+function jalaliDateText(y,m,d){return toFaDigits(String(y)+'/'+String(m).padStart(2,'0')+'/'+String(d).padStart(2,'0'));}
+function gregorianToJalali(gy,gm,gd){
+  const gdm=[0,31,59,90,120,151,181,212,243,273,304,334];let jy;
+  if(gy>1600){jy=979;gy-=1600}else{jy=0;gy-=621}
+  const gy2=gm>2?gy+1:gy;
+  let days=365*gy+Math.floor((gy2+3)/4)-Math.floor((gy2+99)/100)+Math.floor((gy2+399)/400)-80+gd+gdm[gm-1];
+  jy+=33*Math.floor(days/12053);days%=12053;
+  jy+=4*Math.floor(days/1461);days%=1461;
+  if(days>365){jy+=Math.floor((days-1)/365);days=(days-1)%365}
+  const jm=days<186?1+Math.floor(days/31):7+Math.floor((days-186)/30);
+  const jd=1+(days<186?days%31:(days-186)%30);
+  return [jy,jm,jd];
+}
+function setJalaliField(id,value){document.getElementById(id).value=toFaDigits(value);}
+function setDefaultJalaliDates(){
+  const now=new Date(),j=gregorianToJalali(now.getFullYear(),now.getMonth()+1,now.getDate());
+  if(j[0]===1405){
+    const endOrd=ord(j[1],j[2]);
+    setJalaliField('end',fmt(endOrd));
+    setJalaliField('start',fmt(Math.max(1,endOrd-30)));
+  }else{
+    setJalaliField('start','1405/05/03');
+    setJalaliField('end','1405/07/03');
+  }
+}
+function openJalaliPicker(target){
+  pickerTarget=target;
+  try{pickerMonth=parseDate(document.getElementById(target).value)[0]}catch(e){const n=new Date();const j=gregorianToJalali(n.getFullYear(),n.getMonth()+1,n.getDate());pickerMonth=j[0]===1405?j[1]:8}
+  pickerMonth=Math.max(1,Math.min(12,pickerMonth));
+  renderJalaliPicker();
+  document.getElementById('jalaliModal').style.display='flex';
+}
+function closeJalaliPicker(){document.getElementById('jalaliModal').style.display='none';}
+function shiftJalaliMonth(delta){pickerMonth=Math.max(1,Math.min(12,pickerMonth+delta));renderJalaliPicker();}
+function renderJalaliPicker(){
+  document.getElementById('pickerMonthLabel').textContent=JALALI_MONTHS[pickerMonth-1]+' ۱۴۰۵';
+  document.getElementById('monthPrev').disabled=pickerMonth===1;
+  document.getElementById('monthNext').disabled=pickerMonth===12;
+  const days=pickerMonth<=6?31:(pickerMonth<=11?30:29);
+  const box=document.getElementById('pickerDays');box.innerHTML='';
+  const currentText=document.getElementById(pickerTarget).value;
+  let selected=null;try{selected=parseDate(currentText)}catch(e){}
+  const lead=(ord(pickerMonth,1)-1)%7;
+  for(let i=0;i<lead;i++){const empty=document.createElement('span');empty.className='calendar-empty';box.appendChild(empty)}
+  const now=new Date(),today=gregorianToJalali(now.getFullYear(),now.getMonth()+1,now.getDate());
+  for(let day=1;day<=days;day++){
+    const b=document.createElement('button');b.type='button';b.className='calendar-day';b.textContent=fa(day);
+    b.setAttribute('aria-label',jalaliDateText(1405,pickerMonth,day));
+    if(selected&&selected[0]===pickerMonth&&selected[1]===day)b.classList.add('selected');
+    if(today[0]===1405&&today[1]===pickerMonth&&today[2]===day)b.classList.add('today');
+    b.addEventListener('click',()=>chooseJalaliDate(pickerMonth,day));box.appendChild(b);
+  }
+}
+function chooseJalaliDate(month,day){
+  setJalaliField(pickerTarget,jalaliDateText(1405,month,day));
+  closeJalaliPicker();
+  refreshDateValues();
+}
+function chooseTodayForField(){
+  const now=new Date(),j=gregorianToJalali(now.getFullYear(),now.getMonth()+1,now.getDate());
+  if(j[0]!==1405){showError('این نسخه برای تعرفه سال ۱۴۰۵ است؛ تاریخ امروز در سال تعرفه برنامه قرار ندارد.');return}
+  chooseJalaliDate(j[1],j[2]);
+}
+function refreshDateValues(){
+  try{
+    const a=parseDate(document.getElementById('start').value),b=parseDate(document.getElementById('end').value);
+    document.getElementById('days').value=fa(span(a,b));
+    hideError();
+    calc(false);
+  }catch(e){
+    document.getElementById('days').value='';
+    showError(e.message);
+  }
+}
 function parseDate(s){
   const p=norm(s).replace(/[.\\-]/g,'/').split('/').filter(Boolean); if(p.length!==3) throw new Error('تاریخ باید مانند 1405/05/03 باشد');
   let a=+p[0],b=+p[1],c=+p[2],y,m,d; if(a===1405){y=a;m=b;d=c}else if(c===1405){y=c;m=b;d=a}else throw new Error('سال باید 1405 باشد');
@@ -1943,8 +2020,8 @@ function set(id,v){document.getElementById(id).textContent=v;}
 function showError(m){const e=document.getElementById('error');e.textContent=m;e.style.display='block'}function hideError(){document.getElementById('error').style.display='none'}
 function fillProvinces(){const p=document.getElementById('province');p.innerHTML='';Object.keys(DATA.REGIONS).sort((a,b)=>a.localeCompare(b,'fa')).forEach(x=>{const o=document.createElement('option');o.value=x;o.textContent=x;p.appendChild(o)});p.value='خوزستان';fillCities()}
 function fillCities(){const p=document.getElementById('province').value,c=document.getElementById('city');c.innerHTML='';(DATA.REGIONS[p]||[]).forEach(x=>{const o=document.createElement('option');o.value=x;o.textContent=x;c.appendChild(o)});if(p==='خوزستان')c.value='اهواز'}
-function sampleWarm(){document.getElementById('prev').value='84069';document.getElementById('curr').value='92034';document.getElementById('start').value='1405/05/03';document.getElementById('end').value='1405/07/03';document.getElementById('province').value='خوزستان';fillCities();document.getElementById('city').value='اهواز';calc()}
-function sampleCold(){document.getElementById('prev').value='10000';document.getElementById('curr').value='13000';document.getElementById('start').value='1405/10/03';document.getElementById('end').value='1405/11/03';document.getElementById('province').value='خوزستان';fillCities();document.getElementById('city').value='اهواز';calc()}
-document.getElementById('province').addEventListener('change',fillCities);document.querySelectorAll('.tab-btn[data-target]').forEach(b=>b.addEventListener('click',()=>activateTab(b.dataset.target)));fillProvinces();applyResponsiveLabels();calc(false);activateTab('inputPanel');
+function sampleWarm(){document.getElementById('prev').value='84069';document.getElementById('curr').value='92034';setJalaliField('start','1405/05/03');setJalaliField('end','1405/07/03');document.getElementById('province').value='خوزستان';fillCities();document.getElementById('city').value='اهواز';calc()}
+function sampleCold(){document.getElementById('prev').value='10000';document.getElementById('curr').value='13000';setJalaliField('start','1405/10/03');setJalaliField('end','1405/11/03');document.getElementById('province').value='خوزستان';fillCities();document.getElementById('city').value='اهواز';calc()}
+document.getElementById('province').addEventListener('change',fillCities);document.querySelectorAll('.tab-btn[data-target]').forEach(b=>b.addEventListener('click',()=>activateTab(b.dataset.target)));document.getElementById('jalaliModal').addEventListener('click',e=>{if(e.target.id==='jalaliModal')closeJalaliPicker()});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeJalaliPicker()});fillProvinces();setDefaultJalaliDates();applyResponsiveLabels();calc(false);activateTab('inputPanel');
 </script>
 </body></html>
