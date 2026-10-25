@@ -24,3 +24,10 @@ jobs:
         with:
           name: electricity-1405-apk
           path: app/build/outputs/apk/debug/app-debug.apk
+      - name: Package source code
+        run: git archive --format=zip --output=electricity-1405-source-v1.7.zip HEAD
+      - name: Upload source ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: electricity-1405-source
+          path: electricity-1405-source-v1.7.zip

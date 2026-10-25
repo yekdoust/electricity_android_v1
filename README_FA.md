@@ -38,3 +38,9 @@ APK در مسیر `app/build/outputs/apk/debug/app-debug.apk` ساخته می‌
 - جست‌وجوی شهر اضافه شد تا یافتن نام شهر در فهرست بلند آسان باشد.
 - اگر شهر در قواعد مناطق گرمسیر تعریف نشده باشد، برنامه دیگر آن را به‌اشتباه «گرمسیر ۱» فرض نمی‌کند و تعرفه عادی/غیرگرمسیر اعمال می‌شود.
 - منبع فهرست شهرها: https://github.com/sajaddp/list-of-cities-in-Iran (فایل cities-filtered و provinces).
+
+
+## دریافت سورس کامل پروژه
+
+سورس کامل نسخه ۱٫۷ شامل فایل‌های Java، HTML/JavaScript، داده‌های JSON تعرفه و شهرها، فایل‌های Gradle و Workflow ساخت APK است. برای دریافت یک فایل فشرده از سورس در GitHub، در بخش Actions اجرای موفق «Build APK» را باز کنید و Artifact با نام `electricity-1405-source` را دانلود کنید. همچنین نسخه متناظر در مخزن GitHub در دسترس است:
+https://github.com/yekdoust/electricity_android_v1
