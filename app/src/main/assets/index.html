@@ -1791,7 +1791,7 @@ function fa(x){return Number(x).toLocaleString('fa-IR',{maximumFractionDigits:2}
 function norm(s){return String(s).replace(/[۰-۹]/g,d=>String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d))).replace(/[٠-٩]/g,d=>String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))).replace(/[,،]/g,'').trim();}
 const JALALI_MONTHS=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
 let pickerTarget='end',pickerMonth=8;
-function toFaDigits(s){return String(s).replace(/\\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[Number(d)]);}
+function toFaDigits(s){return String(s).replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[Number(d)]);}
 function jalaliDateText(y,m,d){return toFaDigits(String(y)+'/'+String(m).padStart(2,'0')+'/'+String(d).padStart(2,'0'));}
 function gregorianToJalali(gy,gm,gd){
   const gdm=[0,31,59,90,120,151,181,212,243,273,304,334];let jy;
