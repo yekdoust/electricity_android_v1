@@ -1,4 +1,3 @@
-
 const DATA = {
   REGIONS: {
   "خوزستان": [
@@ -1605,7 +1604,24 @@ function calculate(){
   else {if(br.hot){const hm=hotKwh*30/br.hot,[t,m]=tariff(zone,hm,'گرم'),ap=applyTable(hm,t);split.push({mode:'گرم',days:br.hot,monthly:hm,energy:ap.total*br.hot/30,method:m,rows:ap.rows})}if(br.cold){const cm=coldKwh*30/br.cold,[t,m]=tariff(zone,cm,'سرد/غیرگرم'),ap=applyTable(cm,t);split.push({mode:'سرد/غیرگرم',days:br.cold,monthly:cm,energy:ap.total*br.cold/30,method:m,rows:ap.rows})}periodEnergy=split.reduce((s,x)=>s+x.energy,0);monthEnergy=periodEnergy*30/days;method='دوره ترکیبی — محاسبه تفکیکی گرم/سرد'}
   return {prev,curr,kwh,days,monthly,prov,city,br,zone,hotCoef,coldCoef,weighted,mode,hotKwh,coldKwh,hotMonthly:br.hot?hotKwh*30/br.hot:0,coldMonthly:br.cold?coldKwh*30/br.cold:0,rows,monthEnergy,periodEnergy,method,split};
 }
-function calc(){try{const d=calculate();render(d)}catch(e){showError(e.message)}}
+function calc(showSummary=true){try{const d=calculate();render(d);hideError();if(showSummary)activateTab('summaryPanel',false);return true}catch(e){showError(e.message);return false}}
+function activateTab(target,recalculate=true){
+  if(target!=='inputPanel' && recalculate){
+    if(!calc(false))return;
+  }
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active',p.id===target));
+  document.querySelectorAll('.tab-btn[data-target]').forEach(b=>b.classList.toggle('active',b.dataset.target===target));
+}
+function printReport(){
+  if(!calc(false))return;
+  if(window.AndroidBridge && typeof window.AndroidBridge.printPdf==='function'){
+    window.AndroidBridge.printPdf();
+  }else if(typeof window.print==='function'){
+    window.print();
+  }else{
+    showError('چاپ در این محیط پشتیبانی نمی‌شود. برنامه را به‌روزرسانی کنید.');
+  }
+}
 function render(d){
   document.getElementById('result').style.display='block';document.getElementById('days').value=d.days;document.getElementById('zone').value='گرمسیر '+d.zone;
   set('r_kwh',fa(d.kwh));set('r_days',fa(d.days));set('r_hot',fa(d.br.hot));set('r_cold',fa(d.br.cold));set('r_monthly',fa(d.monthly));set('r_zone','گرمسیر '+d.zone);
@@ -1615,8 +1631,43 @@ function render(d){
   set('hk_days',fa(d.br.hot));set('ck_days',fa(d.br.cold));set('all_days',fa(d.days));set('hkwh',fa(d.hotKwh));set('ckwh',fa(d.coldKwh));set('allkwh',fa(d.kwh));set('hmon',fa(d.hotMonthly));set('cmon',fa(d.coldMonthly));set('allmon',fa(d.monthly));
   set('rp',d.prov);set('rc',d.city);set('rz','گرمسیر '+d.zone);set('rzs',d.br.zones.length?d.br.zones.map(z=>'گرمسیر '+z).join('، '):'—');
   const seg=document.getElementById('segments');seg.innerHTML='';d.br.segments.forEach(x=>{const tr=document.createElement('tr');tr.innerHTML=`<td><span class="tag ${x.label==='گرم'?'hot':'cold'}">${x.label}</span></td><td>${x.start}</td><td>${x.end}</td><td>${fa(x.days)}</td><td>${x.zones.length?x.zones.map(z=>'گرمسیر '+z).join('، '):'—'}</td>`;seg.appendChild(tr)});
-  const tiers=document.getElementById('tiers');tiers.innerHTML='';if(d.mode==='ترکیبی'){d.split.forEach(part=>part.rows.forEach(x=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${part.mode}</td><td>${fa(x.from)}</td><td>${x.to?fa(x.to):'بیشتر'}</td><td>${fa(x.qty)}</td><td>${fa(x.rate)}</td><td>${fa(x.amount)} ریال</td>`;tiers.appendChild(tr)}));}else d.rows.forEach(x=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${d.mode}</td><td>${fa(x.from)}</td><td>${x.to?fa(x.to):'بیشتر'}</td><td>${fa(x.qty)}</td><td>${fa(x.rate)}</td><td>${fa(x.amount)} ریال</td>`;tiers.appendChild(tr)});
+  const tiers=document.getElementById('tiers');tiers.innerHTML='';
+  const addTierRow=(mode,days,x)=>{
+    const tr=document.createElement('tr');
+    const periodAmount=x.amount*days/30;
+    const vals=[mode,fa(x.from),x.to===null?'بیشتر':fa(x.to),fa(x.qty),fa(x.rate),fa(x.amount),fa(periodAmount)];
+    vals.forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.appendChild(td)});
+    tiers.appendChild(tr);
+  };
+  if(d.mode==='ترکیبی')d.split.forEach(part=>part.rows.forEach(x=>addTierRow(part.mode,part.days,x)));
+  else d.rows.forEach(x=>addTierRow(d.mode,d.days,x));
   set('monthsum',fa(d.monthEnergy)+' ریال');set('periodsum',fa(d.periodEnergy)+' ریال');
+  renderMethod(d);
+}
+function renderMethod(d){
+  const lead='محاسبه برای '+d.prov+'، '+d.city+'، منطقه '+d.zone+'؛ از '+document.getElementById('start').value+' تا '+document.getElementById('end').value+'. وضعیت دوره: '+d.mode+'.';
+  set('methodIntro',lead);
+  const rows=[];
+  rows.push(['۱. مصرف دوره','قرائت جاری − قرائت قبلی',fa(d.curr)+' − '+fa(d.prev)+' = '+fa(d.kwh)+' کیلووات‌ساعت']);
+  rows.push(['۲. استانداردسازی مصرف','مصرف دوره × ۳۰ ÷ تعداد روز',fa(d.kwh)+' × ۳۰ ÷ '+fa(d.days)+' = '+fa(d.monthly)+' کیلووات‌ساعت در ۳۰ روز']);
+  rows.push(['۳. شمارش روزهای گرم','بررسی هر روز بازه با قاعده شهر',fa(d.br.hot)+' روز گرم از '+fa(d.days)+' روز ('+fa(d.br.hotPct)+'٪)']);
+  rows.push(['۴. شمارش روزهای سرد/غیرگرم','روزهای خارج از بازه گرم',fa(d.br.cold)+' روز سرد/غیرگرم ('+fa(d.br.coldPct)+'٪)']);
+  rows.push(['۵. ضریب روز وزنی','روز گرم × ضریب گرم + روز سرد × ضریب غیرگرم',fa(d.br.hot)+' × '+fa(d.hotCoef)+' + '+fa(d.br.cold)+' × '+fa(d.coldCoef)+' = '+fa(d.weighted)]);
+  if(d.mode==='ترکیبی'){
+    d.split.forEach(part=>rows.push(['۶. مصرف معادل ۳۰روزه بخش '+part.mode,'مصرف آن بخش × ۳۰ ÷ روزهای همان بخش',fa(part.monthly)+' کیلووات‌ساعت؛ '+fa(part.days)+' روز؛ تعرفه: '+part.method]));
+    rows.push(['۷. بهای هر بخش در دوره','بهای پلکانی ۳۰روزه همان بخش × روزهای بخش ÷ ۳۰',d.split.map(part=>part.mode+': '+fa(part.energy)+' ریال').join('؛ ')]);
+  }else{
+    rows.push(['۶. انتخاب جدول تعرفه','بر اساس منطقه تعرفه و وضعیت گرم یا سرد دوره',d.method]);
+    rows.push(['۷. بهای انرژی دوره','بهای پلکانی ۳۰روزه × تعداد روز ÷ ۳۰',fa(d.monthEnergy)+' × '+fa(d.days)+' ÷ ۳۰ = '+fa(d.periodEnergy)+' ریال']);
+  }
+  rows.push(['بهای ماهانه معادل کل دوره','بهای انرژی دوره × ۳۰ ÷ تعداد روز',fa(d.periodEnergy)+' × ۳۰ ÷ '+fa(d.days)+' = '+fa(d.monthEnergy)+' ریال']);
+  const tbody=document.getElementById('methodRows');tbody.innerHTML='';
+  rows.forEach(r=>{const tr=document.createElement('tr');r.forEach(val=>{const td=document.createElement('td');td.textContent=val;tr.appendChild(td)});tbody.appendChild(tr)});
+  let note;
+  if(d.mode==='سرد/غیرگرم')note='دوره کاملاً سرد/غیرگرم است: '+fa(d.br.cold)+' روز سرد و '+fa(d.br.hot)+' روز گرم. بنابراین فقط جدول «'+d.method+'» استفاده شده و جدول تعرفه گرم برای این دوره اعمال نشده است.';
+  else if(d.mode==='گرم')note='دوره کاملاً گرم است: '+fa(d.br.hot)+' روز گرم و '+fa(d.br.cold)+' روز سرد/غیرگرم. فقط جدول «'+d.method+'» استفاده شده است.';
+  else note='دوره ترکیبی است؛ مصرف به نسبت روزهای گرم و سرد تفکیک شده و برای هر بخش جدول تعرفه مربوط به همان وضعیت، جداگانه اعمال شده است.';
+  set('methodNote',note);
 }
 function set(id,v){document.getElementById(id).textContent=v;}
 function showError(m){const e=document.getElementById('error');e.textContent=m;e.style.display='block'}function hideError(){document.getElementById('error').style.display='none'}
@@ -1624,4 +1675,4 @@ function fillProvinces(){const p=document.getElementById('province');p.innerHTML
 function fillCities(){const p=document.getElementById('province').value,c=document.getElementById('city');c.innerHTML='';(DATA.REGIONS[p]||[]).forEach(x=>{const o=document.createElement('option');o.value=x;o.textContent=x;c.appendChild(o)});if(p==='خوزستان')c.value='اهواز'}
 function sampleWarm(){document.getElementById('prev').value='84069';document.getElementById('curr').value='92034';document.getElementById('start').value='1405/05/03';document.getElementById('end').value='1405/07/03';document.getElementById('province').value='خوزستان';fillCities();document.getElementById('city').value='اهواز';calc()}
 function sampleCold(){document.getElementById('prev').value='10000';document.getElementById('curr').value='13000';document.getElementById('start').value='1405/10/03';document.getElementById('end').value='1405/11/03';document.getElementById('province').value='خوزستان';fillCities();document.getElementById('city').value='اهواز';calc()}
-document.getElementById('province').addEventListener('change',fillCities);fillProvinces();calc();
+document.getElementById('province').addEventListener('change',fillCities);document.querySelectorAll('.tab-btn[data-target]').forEach(b=>b.addEventListener('click',()=>activateTab(b.dataset.target)));fillProvinces();calc(false);activateTab('inputPanel');

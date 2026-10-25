@@ -12,7 +12,30 @@ h1{font-size:22px;margin:0 0 4px}.muted{color:#667788;font-size:12px}.grid{displ
 .notice{background:#eff6ff;border:1px solid #d7e8ff;color:#294a6b;padding:10px;border-radius:10px;font-size:12px;margin-top:10px}.error{background:#fff1f2;border:1px solid #fecdd3;color:#9f1239;padding:10px;border-radius:10px;margin-top:10px;display:none}
 .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.metric{border:1px solid #e1e7ee;border-radius:12px;padding:10px;background:#f9fbfd}.metric.hot{background:#fff8eb}.metric.cold{background:#eef7ff}.metric .t{font-size:11px;color:#6d7c8d}.metric .v{font-size:18px;font-weight:bold}
 .table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse;min-width:650px}.table th,.table td{border:1px solid #dbe3ec;padding:7px;text-align:center;font-size:12px}.table th{background:#edf3f8}.tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;background:#edf1f5}.tag.hot{background:#fff1cc}.tag.cold{background:#e5f2ff}.ok{color:#0f7a3b;font-weight:bold}
-@media(max-width:650px){.grid{grid-template-columns:1fr}.metrics{grid-template-columns:1fr 1fr}.metric:last-child{grid-column:1/-1}.wrap{padding:8px}h1{font-size:19px}}
+
+.top-tabs{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:0 0 12px;padding:6px;background:#e8eef6;border-radius:14px;position:sticky;top:0;z-index:5}
+.tab-btn{border:0;border-radius:10px;padding:9px 12px;font:inherit;font-size:13px;cursor:pointer;background:transparent;color:#314155;white-space:nowrap}
+.tab-btn.active{background:#2563eb;color:#fff;box-shadow:0 2px 7px #2563eb30}
+.tab-spacer{flex:1}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.method-lead{border-right:4px solid #2563eb;background:#f5f8ff;padding:12px;border-radius:10px;margin:8px 0 12px}
+.formula-list{margin:0;padding-right:22px}.formula-list li{margin:7px 0}
+.method-table{width:100%;border-collapse:collapse}.method-table th,.method-table td{border:1px solid #dbe3ec;padding:8px;font-size:12px;text-align:right;vertical-align:top}.method-table th{background:#edf3f8;white-space:nowrap}
+.print-footnote{font-size:11px;color:#526173;margin-top:8px}
+@page{size:A4;margin:12mm}
+@media print{
+ body{background:#fff!important;color:#111!important;font-size:10pt;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+ .wrap{max-width:none;margin:0;padding:0}.no-print,.top-tabs,#inputPanel{display:none!important}
+ #result{display:block!important}.tab-panel{display:block!important}
+ .card{box-shadow:none;border:1px solid #cbd5e1;border-radius:4px;padding:8px;margin:0 0 8px;break-inside:avoid}
+ .table-wrap{overflow:visible!important}.table{min-width:0!important;width:100%!important;table-layout:auto}
+ .table th,.table td{font-size:8pt;padding:4px;overflow-wrap:anywhere}
+ h1{font-size:16pt}.metric .v{font-size:12pt}.metrics{grid-template-columns:repeat(3,1fr)}
+ .notice,.method-lead{background:#fff!important;color:#111!important;border:1px solid #cbd5e1}
+ .tag.hot,.tag.cold{background:#fff!important;border:1px solid #aaa}
+ .summary-break{break-before:page}
+}
+@media(max-width:650px){.grid{grid-template-columns:1fr}.metrics{grid-template-columns:1fr 1fr}.metric:last-child{grid-column:1/-1}.wrap{padding:8px}h1{font-size:19px}.top-tabs{position:static;overflow-x:auto;flex-wrap:nowrap}.tab-btn{font-size:12px;padding:8px 10px}.tab-spacer{display:none}}
 </style>
 </head>
 <body>
@@ -22,84 +45,108 @@ h1{font-size:22px;margin:0 0 4px}.muted{color:#667788;font-size:12px}.grid{displ
     <div class="muted">نسخه اندروید — محاسبه تقویمی روزهای گرم/سرد و جدول تفکیکی پله‌های مصرف</div>
   </div>
 
-  <div class="card">
-    <div class="grid">
-      <div class="field"><label>قرائت قبلی</label><input id="prev" value="84069" inputmode="numeric"></div>
-      <div class="field"><label>قرائت جاری</label><input id="curr" value="92034" inputmode="numeric"></div>
-      <div class="field"><label>تاریخ شروع دوره</label><input id="start" value="1405/05/03"></div>
-      <div class="field"><label>تاریخ پایان دوره</label><input id="end" value="1405/07/03"></div>
-      <div class="field"><label>تعداد روز</label><input id="days" readonly></div>
-      <div class="field"><label>استان</label><select id="province"></select></div>
-      <div class="field"><label>شهر/شهرستان</label><select id="city"></select></div>
-      <div class="field"><label>منطقه تعرفه</label><input id="zone" readonly></div>
+  <nav class="top-tabs no-print" id="topTabs" aria-label="بخش‌های برنامه">
+    <button type="button" class="tab-btn active" data-target="inputPanel">ورود اطلاعات</button>
+    <button type="button" class="tab-btn" data-target="summaryPanel">نتیجه دوره</button>
+    <button type="button" class="tab-btn" data-target="methodPanel">نحوه محاسبه</button>
+    <button type="button" class="tab-btn" data-target="tiersPanel">جدول پله‌ای</button>
+    <span class="tab-spacer"></span>
+    <button type="button" class="btn secondary" onclick="printReport()">چاپ / ذخیره PDF</button>
+  </nav>
+
+  <section id="inputPanel" class="tab-panel active">
+    <div class="card">
+      <div class="grid">
+        <div class="field"><label>قرائت قبلی</label><input id="prev" value="84069" inputmode="numeric"></div>
+        <div class="field"><label>قرائت جاری</label><input id="curr" value="92034" inputmode="numeric"></div>
+        <div class="field"><label>تاریخ شروع دوره</label><input id="start" value="1405/05/03"></div>
+        <div class="field"><label>تاریخ پایان دوره</label><input id="end" value="1405/07/03"></div>
+        <div class="field"><label>تعداد روز</label><input id="days" readonly></div>
+        <div class="field"><label>استان</label><select id="province"></select></div>
+        <div class="field"><label>شهر/شهرستان</label><select id="city"></select></div>
+        <div class="field"><label>منطقه تعرفه</label><input id="zone" readonly></div>
+      </div>
+      <div class="notice">روزهای گرم و سرد از تاریخ واقعی دوره و قواعد درج‌شده برای همان شهر محاسبه می‌شوند. در دوره کاملاً سرد، جدول تعرفه گرم اعمال نمی‌شود.</div>
+      <div class="row">
+        <button class="btn primary" onclick="calc(true)">محاسبه</button>
+        <button class="btn secondary" onclick="sampleWarm()">نمونه گرم اهواز</button>
+        <button class="btn secondary" onclick="sampleCold()">آزمون ماه سرد</button>
+      </div>
+      <div id="error" class="error"></div>
     </div>
-    <div class="notice">وضعیت تعرفه از <b>تاریخ واقعی دوره</b> و قواعد همان شهر تشخیص داده می‌شود. دوره کاملاً سرد هرگز با جدول گرم محاسبه نمی‌شود.</div>
-    <div class="row">
-      <button class="btn primary" onclick="calc()">محاسبه</button>
-      <button class="btn secondary" onclick="sampleWarm()">نمونه گرم اهواز</button>
-      <button class="btn secondary" onclick="sampleCold()">آزمون ماه سرد</button>
-      <button class="btn secondary" onclick="window.print()">چاپ / PDF</button>
-    </div>
-    <div id="error" class="error"></div>
-  </div>
+  </section>
 
   <div id="result" style="display:none">
-    <div class="card"><div class="metrics">
-      <div class="metric"><div class="t">مصرف دوره</div><div id="r_kwh" class="v"></div><div class="muted">kWh</div></div>
-      <div class="metric"><div class="t">کل روزها</div><div id="r_days" class="v"></div></div>
-      <div class="metric hot"><div class="t">روز گرم</div><div id="r_hot" class="v"></div></div>
-      <div class="metric cold"><div class="t">روز سرد/غیرگرم</div><div id="r_cold" class="v"></div></div>
-      <div class="metric"><div class="t">متوسط ۳۰روزه</div><div id="r_monthly" class="v"></div></div>
-      <div class="metric"><div class="t">منطقه فعال</div><div id="r_zone" class="v"></div></div>
-    </div></div>
+    <section id="summaryPanel" class="tab-panel">
+      <div class="card"><div class="metrics">
+        <div class="metric"><div class="t">مصرف دوره</div><div id="r_kwh" class="v"></div><div class="muted">kWh</div></div>
+        <div class="metric"><div class="t">کل روزها</div><div id="r_days" class="v"></div></div>
+        <div class="metric hot"><div class="t">روز گرم</div><div id="r_hot" class="v"></div></div>
+        <div class="metric cold"><div class="t">روز سرد/غیرگرم</div><div id="r_cold" class="v"></div></div>
+        <div class="metric"><div class="t">متوسط ۳۰روزه</div><div id="r_monthly" class="v"></div></div>
+        <div class="metric"><div class="t">منطقه فعال</div><div id="r_zone" class="v"></div></div>
+      </div></div>
 
-    <div class="card">
-      <h3>وضعیت تعرفه</h3>
-      <div id="r_mode" style="font-size:18px;font-weight:bold"></div>
-      <div id="r_method" class="muted" style="margin-top:5px"></div>
-      <div id="r_logic" class="notice"></div>
-    </div>
+      <div class="card">
+        <h3>وضعیت تعرفه</h3>
+        <div id="r_mode" style="font-size:18px;font-weight:bold"></div>
+        <div id="r_method" class="muted" style="margin-top:5px"></div>
+        <div id="r_logic" class="notice"></div>
+      </div>
 
-    <div class="card">
-      <h3>تقویم دقیق دوره</h3>
-      <div class="table-wrap"><table class="table"><thead><tr><th>وضعیت</th><th>از</th><th>تا</th><th>روز</th><th>منطقه</th></tr></thead><tbody id="segments"></tbody></table></div>
-    </div>
+      <div class="card">
+        <h3>تقویم دقیق دوره</h3>
+        <div class="table-wrap"><table class="table"><thead><tr><th>وضعیت</th><th>از</th><th>تا</th><th>روز</th><th>منطقه</th></tr></thead><tbody id="segments"></tbody></table></div>
+      </div>
 
-    <div class="card">
-      <h3>جمع‌بندی گرم و سرد</h3>
-      <div class="table-wrap"><table class="table"><tbody>
-        <tr><th>گرم</th><td id="hot_days"></td><td id="hot_pct"></td><td>ضریب: <span id="hot_coef"></span></td></tr>
-        <tr><th>سرد/غیرگرم</th><td id="cold_days"></td><td id="cold_pct"></td><td>ضریب: <span id="cold_coef"></span></td></tr>
-        <tr><th>روز وزنی</th><td colspan="3" id="weighted"></td></tr>
-      </tbody></table></div>
-    </div>
+      <div class="card">
+        <h3>جمع‌بندی گرم و سرد</h3>
+        <div class="table-wrap"><table class="table"><tbody>
+          <tr><th>گرم</th><td id="hot_days"></td><td id="hot_pct"></td><td>ضریب: <span id="hot_coef"></span></td></tr>
+          <tr><th>سرد/غیرگرم</th><td id="cold_days"></td><td id="cold_pct"></td><td>ضریب: <span id="cold_coef"></span></td></tr>
+          <tr><th>روز وزنی</th><td colspan="3" id="weighted"></td></tr>
+        </tbody></table></div>
+      </div>
 
-    <div class="card">
-      <h3>تفکیک مصرف</h3>
-      <div class="table-wrap"><table class="table"><thead><tr><th>بخش</th><th>روز</th><th>مصرف دوره kWh</th><th>متوسط ۳۰روزه kWh</th></tr></thead><tbody>
-        <tr><th>گرم</th><td id="hk_days"></td><td id="hkwh"></td><td id="hmon"></td></tr>
-        <tr><th>سرد/غیرگرم</th><td id="ck_days"></td><td id="ckwh"></td><td id="cmon"></td></tr>
-        <tr><th>جمع</th><td id="all_days"></td><td id="allkwh"></td><td id="allmon"></td></tr>
-      </tbody></table></div>
-    </div>
+      <div class="card">
+        <h3>تفکیک مصرف</h3>
+        <div class="table-wrap"><table class="table"><thead><tr><th>بخش</th><th>روز</th><th>مصرف دوره kWh</th><th>متوسط ۳۰روزه kWh</th></tr></thead><tbody>
+          <tr><th>گرم</th><td id="hk_days"></td><td id="hkwh"></td><td id="hmon"></td></tr>
+          <tr><th>سرد/غیرگرم</th><td id="ck_days"></td><td id="ckwh"></td><td id="cmon"></td></tr>
+          <tr><th>جمع</th><td id="all_days"></td><td id="allkwh"></td><td id="allmon"></td></tr>
+        </tbody></table></div>
+      </div>
 
-    <div class="card">
-      <h3>جدول محاسبه پله‌ای</h3>
-      <div class="table-wrap"><table class="table"><thead><tr><th>بخش</th><th>از</th><th>تا</th><th>kWh ماهانه</th><th>نرخ ریال/kWh</th><th>مبلغ</th></tr></thead><tbody id="tiers"></tbody><tfoot><tr><th colspan="5">جمع ماهانه</th><th id="monthsum"></th></tr><tr><th colspan="5">بهای دوره</th><th id="periodsum"></th></tr></tfoot></table></div>
-    </div>
+      <div class="card">
+        <h3>اطلاعات منطقه</h3>
+        <div class="table-wrap"><table class="table"><tbody>
+          <tr><th>استان</th><td id="rp"></td></tr>
+          <tr><th>شهر/شهرستان</th><td id="rc"></td></tr>
+          <tr><th>منطقه تشخیص داده‌شده</th><td id="rz"></td></tr>
+          <tr><th>مناطق فعال در دوره</th><td id="rzs"></td></tr>
+        </tbody></table></div>
+      </div>
+    </section>
 
-    <div class="card">
-      <h3>اطلاعات منطقه</h3>
-      <div class="table-wrap"><table class="table"><tbody>
-        <tr><th>استان</th><td id="rp"></td></tr>
-        <tr><th>شهر/شهرستان</th><td id="rc"></td></tr>
-        <tr><th>منطقه تشخیص داده‌شده</th><td id="rz"></td></tr>
-        <tr><th>مناطق فعال در دوره</th><td id="rzs"></td></tr>
-      </tbody></table></div>
-    </div>
+    <section id="methodPanel" class="tab-panel">
+      <div class="card">
+        <h3>نحوه محاسبه تعرفه و بهای دوره</h3>
+        <div id="methodIntro" class="method-lead"></div>
+        <div class="table-wrap"><table class="method-table"><thead><tr><th>مرحله</th><th>فرمول</th><th>جایگذاری و نتیجه</th></tr></thead><tbody id="methodRows"></tbody></table></div>
+        <div id="methodNote" class="notice"></div>
+        <div class="print-footnote">این خروجی بهای انرژی بر اساس جدول‌های برنامه را نشان می‌دهد؛ مالیات، عوارض، سوخت نیروگاهی، بیمه و سایر ردیف‌های قبض ممکن است جداگانه به آن افزوده شوند.</div>
+      </div>
+    </section>
+
+    <section id="tiersPanel" class="tab-panel">
+      <div class="card">
+        <h3>جدول محاسبه پله‌ای</h3>
+        <div class="muted">در دوره ترکیبی، پله‌ها برای بخش گرم و سرد جدا محاسبه می‌شوند. مبلغ دوره هر ردیف = مبلغ ۳۰روزه همان پله × تعداد روز آن بخش ÷ ۳۰.</div>
+        <div class="table-wrap"><table class="table"><thead><tr><th>بخش</th><th>از</th><th>تا</th><th>kWh ماهانه</th><th>نرخ ریال/kWh</th><th>مبلغ پله برای ۳۰ روز (ریال)</th><th>سهم پله در بهای دوره (ریال)</th></tr></thead><tbody id="tiers"></tbody><tfoot><tr><th colspan="6">بهای ماهانه معادل کل دوره</th><th id="monthsum"></th></tr><tr><th colspan="6">بهای انرژی کل دوره</th><th id="periodsum"></th></tr></tfoot></table></div>
+      </div>
+    </section>
   </div>
 </div>
-
 <script>
 const DATA = {
   REGIONS: {
@@ -1707,7 +1754,24 @@ function calculate(){
   else {if(br.hot){const hm=hotKwh*30/br.hot,[t,m]=tariff(zone,hm,'گرم'),ap=applyTable(hm,t);split.push({mode:'گرم',days:br.hot,monthly:hm,energy:ap.total*br.hot/30,method:m,rows:ap.rows})}if(br.cold){const cm=coldKwh*30/br.cold,[t,m]=tariff(zone,cm,'سرد/غیرگرم'),ap=applyTable(cm,t);split.push({mode:'سرد/غیرگرم',days:br.cold,monthly:cm,energy:ap.total*br.cold/30,method:m,rows:ap.rows})}periodEnergy=split.reduce((s,x)=>s+x.energy,0);monthEnergy=periodEnergy*30/days;method='دوره ترکیبی — محاسبه تفکیکی گرم/سرد'}
   return {prev,curr,kwh,days,monthly,prov,city,br,zone,hotCoef,coldCoef,weighted,mode,hotKwh,coldKwh,hotMonthly:br.hot?hotKwh*30/br.hot:0,coldMonthly:br.cold?coldKwh*30/br.cold:0,rows,monthEnergy,periodEnergy,method,split};
 }
-function calc(){try{const d=calculate();render(d)}catch(e){showError(e.message)}}
+function calc(showSummary=true){try{const d=calculate();render(d);hideError();if(showSummary)activateTab('summaryPanel',false);return true}catch(e){showError(e.message);return false}}
+function activateTab(target,recalculate=true){
+  if(target!=='inputPanel' && recalculate){
+    if(!calc(false))return;
+  }
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active',p.id===target));
+  document.querySelectorAll('.tab-btn[data-target]').forEach(b=>b.classList.toggle('active',b.dataset.target===target));
+}
+function printReport(){
+  if(!calc(false))return;
+  if(window.AndroidBridge && typeof window.AndroidBridge.printPdf==='function'){
+    window.AndroidBridge.printPdf();
+  }else if(typeof window.print==='function'){
+    window.print();
+  }else{
+    showError('چاپ در این محیط پشتیبانی نمی‌شود. برنامه را به‌روزرسانی کنید.');
+  }
+}
 function render(d){
   document.getElementById('result').style.display='block';document.getElementById('days').value=d.days;document.getElementById('zone').value='گرمسیر '+d.zone;
   set('r_kwh',fa(d.kwh));set('r_days',fa(d.days));set('r_hot',fa(d.br.hot));set('r_cold',fa(d.br.cold));set('r_monthly',fa(d.monthly));set('r_zone','گرمسیر '+d.zone);
@@ -1717,8 +1781,43 @@ function render(d){
   set('hk_days',fa(d.br.hot));set('ck_days',fa(d.br.cold));set('all_days',fa(d.days));set('hkwh',fa(d.hotKwh));set('ckwh',fa(d.coldKwh));set('allkwh',fa(d.kwh));set('hmon',fa(d.hotMonthly));set('cmon',fa(d.coldMonthly));set('allmon',fa(d.monthly));
   set('rp',d.prov);set('rc',d.city);set('rz','گرمسیر '+d.zone);set('rzs',d.br.zones.length?d.br.zones.map(z=>'گرمسیر '+z).join('، '):'—');
   const seg=document.getElementById('segments');seg.innerHTML='';d.br.segments.forEach(x=>{const tr=document.createElement('tr');tr.innerHTML=`<td><span class="tag ${x.label==='گرم'?'hot':'cold'}">${x.label}</span></td><td>${x.start}</td><td>${x.end}</td><td>${fa(x.days)}</td><td>${x.zones.length?x.zones.map(z=>'گرمسیر '+z).join('، '):'—'}</td>`;seg.appendChild(tr)});
-  const tiers=document.getElementById('tiers');tiers.innerHTML='';if(d.mode==='ترکیبی'){d.split.forEach(part=>part.rows.forEach(x=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${part.mode}</td><td>${fa(x.from)}</td><td>${x.to?fa(x.to):'بیشتر'}</td><td>${fa(x.qty)}</td><td>${fa(x.rate)}</td><td>${fa(x.amount)} ریال</td>`;tiers.appendChild(tr)}));}else d.rows.forEach(x=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${d.mode}</td><td>${fa(x.from)}</td><td>${x.to?fa(x.to):'بیشتر'}</td><td>${fa(x.qty)}</td><td>${fa(x.rate)}</td><td>${fa(x.amount)} ریال</td>`;tiers.appendChild(tr)});
+  const tiers=document.getElementById('tiers');tiers.innerHTML='';
+  const addTierRow=(mode,days,x)=>{
+    const tr=document.createElement('tr');
+    const periodAmount=x.amount*days/30;
+    const vals=[mode,fa(x.from),x.to===null?'بیشتر':fa(x.to),fa(x.qty),fa(x.rate),fa(x.amount),fa(periodAmount)];
+    vals.forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.appendChild(td)});
+    tiers.appendChild(tr);
+  };
+  if(d.mode==='ترکیبی')d.split.forEach(part=>part.rows.forEach(x=>addTierRow(part.mode,part.days,x)));
+  else d.rows.forEach(x=>addTierRow(d.mode,d.days,x));
   set('monthsum',fa(d.monthEnergy)+' ریال');set('periodsum',fa(d.periodEnergy)+' ریال');
+  renderMethod(d);
+}
+function renderMethod(d){
+  const lead='محاسبه برای '+d.prov+'، '+d.city+'، منطقه '+d.zone+'؛ از '+document.getElementById('start').value+' تا '+document.getElementById('end').value+'. وضعیت دوره: '+d.mode+'.';
+  set('methodIntro',lead);
+  const rows=[];
+  rows.push(['۱. مصرف دوره','قرائت جاری − قرائت قبلی',fa(d.curr)+' − '+fa(d.prev)+' = '+fa(d.kwh)+' کیلووات‌ساعت']);
+  rows.push(['۲. استانداردسازی مصرف','مصرف دوره × ۳۰ ÷ تعداد روز',fa(d.kwh)+' × ۳۰ ÷ '+fa(d.days)+' = '+fa(d.monthly)+' کیلووات‌ساعت در ۳۰ روز']);
+  rows.push(['۳. شمارش روزهای گرم','بررسی هر روز بازه با قاعده شهر',fa(d.br.hot)+' روز گرم از '+fa(d.days)+' روز ('+fa(d.br.hotPct)+'٪)']);
+  rows.push(['۴. شمارش روزهای سرد/غیرگرم','روزهای خارج از بازه گرم',fa(d.br.cold)+' روز سرد/غیرگرم ('+fa(d.br.coldPct)+'٪)']);
+  rows.push(['۵. ضریب روز وزنی','روز گرم × ضریب گرم + روز سرد × ضریب غیرگرم',fa(d.br.hot)+' × '+fa(d.hotCoef)+' + '+fa(d.br.cold)+' × '+fa(d.coldCoef)+' = '+fa(d.weighted)]);
+  if(d.mode==='ترکیبی'){
+    d.split.forEach(part=>rows.push(['۶. مصرف معادل ۳۰روزه بخش '+part.mode,'مصرف آن بخش × ۳۰ ÷ روزهای همان بخش',fa(part.monthly)+' کیلووات‌ساعت؛ '+fa(part.days)+' روز؛ تعرفه: '+part.method]));
+    rows.push(['۷. بهای هر بخش در دوره','بهای پلکانی ۳۰روزه همان بخش × روزهای بخش ÷ ۳۰',d.split.map(part=>part.mode+': '+fa(part.energy)+' ریال').join('؛ ')]);
+  }else{
+    rows.push(['۶. انتخاب جدول تعرفه','بر اساس منطقه تعرفه و وضعیت گرم یا سرد دوره',d.method]);
+    rows.push(['۷. بهای انرژی دوره','بهای پلکانی ۳۰روزه × تعداد روز ÷ ۳۰',fa(d.monthEnergy)+' × '+fa(d.days)+' ÷ ۳۰ = '+fa(d.periodEnergy)+' ریال']);
+  }
+  rows.push(['بهای ماهانه معادل کل دوره','بهای انرژی دوره × ۳۰ ÷ تعداد روز',fa(d.periodEnergy)+' × ۳۰ ÷ '+fa(d.days)+' = '+fa(d.monthEnergy)+' ریال']);
+  const tbody=document.getElementById('methodRows');tbody.innerHTML='';
+  rows.forEach(r=>{const tr=document.createElement('tr');r.forEach(val=>{const td=document.createElement('td');td.textContent=val;tr.appendChild(td)});tbody.appendChild(tr)});
+  let note;
+  if(d.mode==='سرد/غیرگرم')note='دوره کاملاً سرد/غیرگرم است: '+fa(d.br.cold)+' روز سرد و '+fa(d.br.hot)+' روز گرم. بنابراین فقط جدول «'+d.method+'» استفاده شده و جدول تعرفه گرم برای این دوره اعمال نشده است.';
+  else if(d.mode==='گرم')note='دوره کاملاً گرم است: '+fa(d.br.hot)+' روز گرم و '+fa(d.br.cold)+' روز سرد/غیرگرم. فقط جدول «'+d.method+'» استفاده شده است.';
+  else note='دوره ترکیبی است؛ مصرف به نسبت روزهای گرم و سرد تفکیک شده و برای هر بخش جدول تعرفه مربوط به همان وضعیت، جداگانه اعمال شده است.';
+  set('methodNote',note);
 }
 function set(id,v){document.getElementById(id).textContent=v;}
 function showError(m){const e=document.getElementById('error');e.textContent=m;e.style.display='block'}function hideError(){document.getElementById('error').style.display='none'}
@@ -1726,6 +1825,6 @@ function fillProvinces(){const p=document.getElementById('province');p.innerHTML
 function fillCities(){const p=document.getElementById('province').value,c=document.getElementById('city');c.innerHTML='';(DATA.REGIONS[p]||[]).forEach(x=>{const o=document.createElement('option');o.value=x;o.textContent=x;c.appendChild(o)});if(p==='خوزستان')c.value='اهواز'}
 function sampleWarm(){document.getElementById('prev').value='84069';document.getElementById('curr').value='92034';document.getElementById('start').value='1405/05/03';document.getElementById('end').value='1405/07/03';document.getElementById('province').value='خوزستان';fillCities();document.getElementById('city').value='اهواز';calc()}
 function sampleCold(){document.getElementById('prev').value='10000';document.getElementById('curr').value='13000';document.getElementById('start').value='1405/10/03';document.getElementById('end').value='1405/11/03';document.getElementById('province').value='خوزستان';fillCities();document.getElementById('city').value='اهواز';calc()}
-document.getElementById('province').addEventListener('change',fillCities);fillProvinces();calc();
+document.getElementById('province').addEventListener('change',fillCities);document.querySelectorAll('.tab-btn[data-target]').forEach(b=>b.addEventListener('click',()=>activateTab(b.dataset.target)));fillProvinces();calc(false);activateTab('inputPanel');
 </script>
 </body></html>

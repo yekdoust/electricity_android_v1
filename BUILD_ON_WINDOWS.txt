@@ -1,7 +1,16 @@
-1) Android Studio را نصب کنید.
-2) این پوشه را در Android Studio با Open باز کنید.
-3) صبر کنید Gradle Sync تمام شود.
-4) از Build > Build APK(s) استفاده کنید.
-5) فایل خروجی در app\build\outputs\apk\debug\app-debug.apk قرار می‌گیرد.
+محاسبه‌گر برق خانگی ۱۴۰۵ — نسخه ۱٫۱
 
-نکته: این پروژه در زمان اجرای برنامه هیچ کتابخانه خارجی ندارد؛ رابط کاربری داخل WebView و منطق محاسبه داخل assets/index.html است.
+روش پیشنهادی بدون Android Studio:
+1) پوشه پروژه را به مخزن GitHub خود ارسال کنید.
+2) در GitHub به تب Actions بروید.
+3) Workflow با نام Build APK را انتخاب کنید و Run workflow را بزنید.
+4) بعد از پایان موفق، در پایین صفحه اجرای Workflow بخش Artifacts، فایل electricity-1405-apk را دانلود کنید.
+5) ZIP مربوط به Artifact را باز کنید تا app-debug.apk را دریافت کنید.
+
+ساخت محلی با Android SDK و Gradle:
+gradle :app:assembleDebug
+
+خروجی:
+app\build\outputs\apk\debug\app-debug.apk
+
+برای خروجی PDF داخل اپ، دکمه «چاپ / ذخیره PDF» پنجره چاپ سیستمی Android را باز می‌کند؛ سپس «Save as PDF / ذخیره به‌صورت PDF» را انتخاب کنید.
